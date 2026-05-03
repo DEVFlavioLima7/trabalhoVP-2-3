@@ -1,39 +1,66 @@
 #ifndef ESTRUTURAS_VP_H
 #define ESTRUTURAS_VP_H
-#define VERMELHO 1
-#define PRETO    0
 
-// Estrutura para as Disciplinas (organizada por código) 
-typedef struct no_disciplina {
-    int codigo;
-    char nome[100];
-    int bloco;
+#define TAM_NOME 100
+
+/* ===================== CORES ===================== */
+
+typedef enum {
+    PRETO = 0,
+    VERMELHO = 1
+} Cor;
+
+/* ===================== DADOS ===================== */
+
+typedef struct {
+    int codigodisciplina;
+    char nomedisciplina[TAM_NOME];
+    int blocodisciplina;
     int carga_horaria;
-    int cor; // 1 para Vermelho, 0 para Preto
-    struct no_disciplina *esq, *dir;
-} NoDisciplina;
+} Disciplina;
 
+struct rbnode; // forward declaration
 
-typedef struct no_curso {
-    int codigo;
-    char nome[100];
-    int qtd_blocos;
+typedef struct {
+    int codigocurso;
+    char nomecurso[TAM_NOME];
+    int qtd_blocoscurso;
     int semanas_disciplina;
-    NoDisciplina *raiz_disciplinas; 
-    int cor; // 1 para Vermelho, 0 para Preto
-    struct no_curso *esq, *dir;
-} NoCurso;
+    struct rbnode *raiz_disciplinas; // árvore própria
+} Curso;
 
-
-// Estrutura para os Alunos (organizada por matrícula) 
-typedef struct no_aluno {
+typedef struct {
     int matricula;
-    char nome[100];
-    int codigo_curso;
+    char nomealuno[TAM_NOME];
+    int codigocurso;
     int ano_ingresso;
-    int semestre_ingresso; 
-    int cor; // 1 para Vermelho, 0 para Preto
-    struct no_aluno *esq, *dir;
-} NoAluno;
+    int semestre_ingresso;
+} Aluno;
+
+/* ===================== CONTROLE DE TIPO ===================== */
+
+typedef enum {
+    TIPO_ALUNO,
+    TIPO_CURSO,
+    TIPO_DISCIPLINA
+} TipoInfo;
+
+/* ===================== UNION ===================== */
+
+typedef union {
+    Aluno aluno;
+    Curso curso;
+    Disciplina disciplina;
+} Info;
+
+/* ===================== NÓ RUBRO-NEGRO ===================== */
+
+typedef struct rbnode {
+    Info info;
+    TipoInfo tipo;
+
+    Cor cor;
+    struct rbnode *esq, *dir;
+} RBNode;
 
 #endif
