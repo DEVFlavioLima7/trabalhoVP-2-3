@@ -1,45 +1,72 @@
 #ifndef ESTRUTURAS_23_H
 #define ESTRUTURAS_23_H
 
+#define TAM_NOME 100
 
-typedef struct no_disciplina23 {
+/* ===================== DADOS ===================== */
 
-    struct {
-        int codigo;
-        char nome[100];
-        int bloco;
-        int carga_horaria;
-    } info1, info2;
+typedef struct {
+    int codigodisciplina;
+    char nomedisciplina[TAM_NOME];
+    int blocodisciplina;
+    int carga_horaria;
+} Disciplina;
 
-    int num_infos; 
-    struct no_disciplina23 *esq, *cen, *dir;
-} NoDisciplina23;
+/* Forward declaration da árvore 2-3 */
+typedef struct arv23 Arv23;
 
-typedef struct no_curso23 {
-    struct {
-        int codigo;
-        char nome[100];
-        int qtd_blocos;
-        int semanas_disciplina;
-        NoDisciplina23 *raiz_disciplinas; 
-    } info1, info2;
+typedef struct {
+    int codigocurso;
+    char nomecurso[TAM_NOME];
+    int qtd_blocoscurso;
+    int semanas_disciplina;
+    Arv23 *raiz_disciplinas; // mantém padrão com árvore
+} Curso;
 
-    int num_infos;
-    struct no_curso23 *esq, *cen, *dir;
-} NoCurso23;
+typedef struct {
+    int matriculaaluno;
+    char nomealuno[TAM_NOME];
+    int codigocurso;
+    int ano_ingresso;
+    int semestre_ingresso;
+} Aluno;
 
 
-typedef struct no_aluno23 {
-    struct {
-        int matricula;
-        char nome[100];
-        int codigo_curso;
-        int ano_ingresso;
-        int semestre_ingresso;
-    } info1, info2;
+/* ===================== CONTROLE DE TIPO ===================== */
 
-    int num_infos;
-    struct no_aluno23 *esq, *cen, *dir;
-} NoAluno23;
+typedef enum {
+    TIPO_ALUNO,
+    TIPO_CURSO,
+    TIPO_DISCIPLINA
+} TipoInfo;
+
+
+/* ===================== UNION ===================== */
+
+typedef union {
+    Aluno aluno;
+    Curso curso;
+    Disciplina disciplina;
+} Info;
+
+
+/* ===================== INFO COM TIPO ===================== */
+
+typedef struct {
+    Info dado;
+    TipoInfo tipo;
+} InfoComTipo;
+
+
+/* ===================== ÁRVORE 2-3 ===================== */
+
+struct arv23 {
+    InfoComTipo info[2];  // cada posição sabe seu tipo
+    int nInfos;           // 1 ou 2
+
+    struct arv23 *esq;
+    struct arv23 *cen;
+    struct arv23 *dir;
+};
 
 #endif
