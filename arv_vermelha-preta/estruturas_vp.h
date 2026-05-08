@@ -1,6 +1,5 @@
 #ifndef ESTRUTURAS_VP_H
 #define ESTRUTURAS_VP_H
-
 #define TAM_NOME 100
 
 /* ===================== CORES ===================== */
