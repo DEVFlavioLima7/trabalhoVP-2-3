@@ -1,5 +1,6 @@
 #ifndef ESTRUTURAS_VP_H
 #define ESTRUTURAS_VP_H
+
 #define TAM_NOME 100
 
 /* ===================== CORES ===================== */
@@ -12,26 +13,26 @@ typedef enum {
 /* ===================== DADOS ===================== */
 
 typedef struct {
-    int codigodisciplina;
-    char nomedisciplina[TAM_NOME];
-    int blocodisciplina;
+    int codigo_disciplina;
+    char nome_disciplina[TAM_NOME];
+    int bloco_disciplina;
     int carga_horaria;
 } Disciplina;
 
 struct rbnode; // forward declaration
 
 typedef struct {
-    int codigocurso;
-    char nomecurso[TAM_NOME];
-    int qtd_blocoscurso;
+    int codigo_curso;
+    char nome_curso[TAM_NOME];
+    int qtd_blocos_curso;
     int semanas_disciplina;
     struct rbnode *raiz_disciplinas; // árvore própria
 } Curso;
 
 typedef struct {
     int matricula;
-    char nomealuno[TAM_NOME];
-    int codigocurso;
+    char nome_aluno[TAM_NOME];
+    int codigo_curso;
     int ano_ingresso;
     int semestre_ingresso;
 } Aluno;
@@ -61,5 +62,21 @@ typedef struct rbnode {
     Cor cor;
     struct rbnode *esq, *dir;
 } RBNode;
+
+/* ===================== PROTÓTIPOS ===================== */
+int inserirAluno(RBNode** raiz_alunos, int mat, char nome[], int cod_curso, int ano, int sem);
+int inserirCurso(RBNode** raiz_cursos, int codigo, char nome[], int blocos, int semanas);
+int inserirDisciplina(RBNode** raiz_disciplinas, int cod_disc, char nome[], int bloco, int carga);
+int inserirDisciplinaNoCurso(RBNode* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga);
+
+int inserir_no(RBNode** raiz, Info info, TipoInfo tipo);
+RBNode* criar_no(Info info, TipoInfo tipo);
+RBNode* buscar_no(RBNode* raiz, int chave, TipoInfo tipo);
+int obter_cor(RBNode* no);
+void trocar_cores(RBNode* H);
+RBNode* rotar_esquerda(RBNode* A);
+RBNode* rotar_direita(RBNode* A);
+RBNode* balancear(RBNode* H);
+
 
 #endif

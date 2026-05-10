@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "arvore_vp.h"
-#include "curso.h"
-#include "disciplina.h"
-#include "aluno.h"
+#include "estruturas_vp.h"
+
 
 void cabecalho() {
     printf("\n/***********************************************************/\n");
@@ -62,8 +60,8 @@ int main() {
                 }
 
                 printf("Curso: %s | Max Blocos: %d | Semanas: %d\n", 
-                        curso_encontrado->info.curso.nomecurso,
-                        curso_encontrado->info.curso.qtd_blocoscurso,
+                        curso_encontrado->info.curso.nome_curso,
+                        curso_encontrado->info.curso.qtd_blocos_curso,
                         curso_encontrado->info.curso.semanas_disciplina);
                 printf("-------------------------------------------\n");
                 
@@ -72,7 +70,7 @@ int main() {
                 printf("Nome da Disciplina: "); 
                 scanf(" %[^\n]", nome); 
                 
-                int limite_blocos = curso_encontrado->info.curso.qtd_blocoscurso;
+                int limite_blocos = curso_encontrado->info.curso.qtd_blocos_curso;
                 do {
                     printf("Bloco da Disciplina (Deve ser menor que %d): ", limite_blocos);
                     scanf("%d", &bloco_d);
