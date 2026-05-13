@@ -3,7 +3,9 @@
 #include <string.h>
 #include "estruturas_vp.h"
 
-/* ===================== APOIO ===================== */
+/* ============================================================
+   FUNÇÕES DE APOIO E MANIPULAÇÃO DA ÁRVORE (GENÉRICAS)
+   ============================================================ */
 
 RBNode* criar_no(Info info, TipoInfo tipo) {
     RBNode* novo = (RBNode*)malloc(sizeof(RBNode));
@@ -17,71 +19,34 @@ RBNode* criar_no(Info info, TipoInfo tipo) {
 }
 
 int obter_chave(Info info, TipoInfo tipo) {
-    int chave = -1; 
-    
+    int chave = -1;
     switch (tipo) {
         case TIPO_ALUNO:      
-            chave = info.aluno.matricula;
+            chave = info.aluno.matricula; 
             break;
-            
         case TIPO_CURSO:      
-            chave = info.curso.codigo_curso;
+            chave = info.curso.codigo_curso; 
             break;
-            
         case TIPO_DISCIPLINA: 
-            chave = info.disciplina.codigo_disciplina;
+            chave = info.disciplina.codigo_disciplina; 
             break;
-            
     }
-    
-    return chave; 
-}
-
-RBNode* insere_recursivo(RBNode* H, Info info, TipoInfo tipo, int *resp) {
-    if (H == NULL) {
-        RBNode* novo = criar_no(info, tipo);
-        if (novo != NULL) {
-            *resp = 1;
-            H = novo;
-        }
-    }
-
-    int valor_novo = obter_chave(info, tipo);
-    int valor_atual = obter_chave(H->info, H->tipo);
-
-    if (valor_novo == valor_atual) {
-        *resp = 0; 
-    } else {
-        if (valor_novo < valor_atual)
-            H->esq = insere_recursivo(H->esq, info, tipo, resp);
-        else
-            H->dir = insere_recursivo(H->dir, info, tipo, resp);
-    }
-
-    return balancear(H);
-}
-
-int inserir_no(RBNode** raiz, Info info, TipoInfo tipo) {
-    int resp;
-    *raiz = insere_recursivo(*raiz, info, tipo, &resp);
-    if (*raiz != NULL)
-        (*raiz)->cor = PRETO;
-    return resp; 
+    return chave;
 }
 
 int obter_cor(RBNode* no) {
-    return (no == NULL) ? PRETO : no->cor;
+    int cor = PRETO;
+    if (no != NULL) cor = no->cor;
+    return cor;
 }
 
 void trocar_cores(RBNode* H) {
     H->cor = !H->cor;
     if (H->esq != NULL)
         H->esq->cor = !H->esq->cor;
-    if (H->dir != NULL)
+    if (H->dir != NULL) 
         H->dir->cor = !H->dir->cor;
 }
-
-
 
 RBNode* rotar_esquerda(RBNode* A) {
     RBNode* B = A->dir;
@@ -102,49 +67,67 @@ RBNode* rotar_direita(RBNode* A) {
 }
 
 RBNode* balancear(RBNode* H) {
-    // 1. Nó vermelho é sempre filho à esquerda
     if (obter_cor(H->dir) == VERMELHO && obter_cor(H->esq) == PRETO)
         H = rotar_esquerda(H);
 
-    // 2. Filho da esquerda e neto da esquerda são vermelhos
     if (obter_cor(H->esq) == VERMELHO && obter_cor(H->esq->esq) == VERMELHO)
         H = rotar_direita(H);
 
-    // 3. Dois filhos vermelhos: troca cor!
     if (obter_cor(H->esq) == VERMELHO && obter_cor(H->dir) == VERMELHO)
         trocar_cores(H);
 
     return H;
 }
 
+RBNode* insere_recursivo(RBNode* H, Info info, TipoInfo tipo, int *resp) {
+    if (H == NULL) {
+        H = criar_no(info, tipo);
+        if (H != NULL) *resp = 1;
+        else *resp = 0;
+    } else {
+        int valor_novo = obter_chave(info, tipo);
+        int valor_atual = obter_chave(H->info, H->tipo);
 
-/* ===================== BUSCAS ===================== */
+        if (valor_novo < valor_atual)
+            H->esq = insere_recursivo(H->esq, info, tipo, resp);
+        else if (valor_novo > valor_atual)
+            H->dir = insere_recursivo(H->dir, info, tipo, resp);
+        else
+            *resp = 0;
+
+        H = balancear(H);
+    }
+    return H;
+}
+
+int inserir_no(RBNode** raiz, Info info, TipoInfo tipo) {
+    int resp;
+    *raiz = insere_recursivo(*raiz, info, tipo, &resp);
+    if (*raiz != NULL)
+        (*raiz)->cor = PRETO;
+    return resp;
+}
 
 RBNode* buscar_no(RBNode* raiz, int chave, TipoInfo tipo) {
-    RBNode* resultado = NULL; // Começa assumindo que não encontrou (NULL)
-
+    RBNode* res = NULL;
     if (raiz != NULL) {
         int chave_atual = obter_chave(raiz->info, raiz->tipo);
-
-        if (chave == chave_atual) {
-            resultado = raiz; // Achou o nó!
-        } 
-        else if (chave < chave_atual) {
-            resultado = buscar_no(raiz->esq, chave, tipo); // Busca na esquerda
-        } 
-        else {
-            resultado = buscar_no(raiz->dir, chave, tipo); // Busca na direita
-        }
+        if (chave == chave_atual)
+            res = raiz;
+        else if (chave < chave_atual)
+            res = buscar_no(raiz->esq, chave, tipo);
+        else
+            res = buscar_no(raiz->dir, chave, tipo);
     }
-
-    return resultado; // Um único ponto de saída
+    return res;
 }
-/*============= ALUNO =============*/
+
+/* ============================================================
+   FUNÇÕES ESPECÍFICAS (ALUNO, CURSO, DISCIPLINA)
+   ============================================================ */
 
 int inserirAluno(RBNode** raiz_alunos, int mat, char nome[], int cod_curso, int ano, int sem) {
-    int resultado = 0; // Começa como 0 (falha/duplicado) por padrão
-   
-    // Se a busca retornar NULL, o aluno não existe, então podemos inserir
+    int res = 0;
     if (buscar_no(*raiz_alunos, mat, TIPO_ALUNO) == NULL) {
         Info info;
         info.aluno.matricula = mat;
@@ -152,99 +135,50 @@ int inserirAluno(RBNode** raiz_alunos, int mat, char nome[], int cod_curso, int 
         info.aluno.codigo_curso = cod_curso;
         info.aluno.ano_ingresso = ano;
         info.aluno.semestre_ingresso = sem;
-
-        resultado = inserir_no(raiz_alunos, info, TIPO_ALUNO);
+        res = inserir_no(raiz_alunos, info, TIPO_ALUNO);
     }
-
-    return resultado; // Único ponto de saída
+    return res;
 }
 
-/*============= CURSO =============*/
-
-/* Insere um novo curso na árvore principal */
 int inserirCurso(RBNode** raiz, int codigo, char nome[], int blocos, int semanas) {
-    int resultado = 0; // Começa como 0 (falha/duplicado) por padrão
-
-    // Verifica se o curso NÃO existe para poder prosseguir
-    if (buscar_no(*raiz, codigo, TIPO_CURSO) == NULL) { 
+    int res = 0;
+    if (buscar_no(*raiz, codigo, TIPO_CURSO) == NULL) {
         Info info;
         info.curso.codigo_curso = codigo;
         strcpy(info.curso.nome_curso, nome);
         info.curso.qtd_blocos_curso = blocos;
         info.curso.semanas_disciplina = semanas;
-        
-        // Todo curso nasce com sua árvore de disciplinas vazia
         info.curso.raiz_disciplinas = NULL; 
-
-        resultado = inserir_no(raiz, info, TIPO_CURSO);
+        res = inserir_no(raiz, info, TIPO_CURSO);
     }
-
-    return resultado; // Único ponto de saída
+    return res;
 }
 
-/*============= DISCIPLINA =============*/
-
-// Função auxiliar para validar as regras de inserção de disciplina
 int validarRegras(int bloco_disciplina, int qtd_blocos_curso, int carga, int semanas) {
-    int status = 0; // Assume que é INVÁLIDO até provar o contrário
-
-    // Lógica:
-    // Se o bloco for MENOR que a qtd do curso
-    // E o bloco for válido (>= 0)
-    // E a carga for múltipla das semanas (resto da divisão == 0)
-    // E a carga for válida (> 0)
-    if (bloco_disciplina < qtd_blocos_curso && bloco_disciplina >= 0 && carga % semanas == 0 && carga > 0) {
-        status = 1; // Tudo certo, passou em todos os testes!
+    int status = 0;
+    if (bloco_disciplina < qtd_blocos_curso && bloco_disciplina >= 0 && 
+        carga % semanas == 0 && carga > 0) {
+        status = 1;
     }
-
     return status;
-}
-
-int inserirDisciplina(RBNode** raiz_disciplinas, int cod_disc, char nome[], int bloco, int carga){
-    int resultado = 0; // Começa como 0 (falha/duplicado) por padrão
-
-    // Verifica se a disciplina NÃO existe para poder prosseguir
-    if (buscar_no(*raiz_disciplinas, cod_disc, TIPO_DISCIPLINA) == NULL) { 
-        Info info;
-        info.disciplina.codigo_disciplina = cod_disc;
-        strcpy(info.disciplina.nome_disciplina, nome);
-        info.disciplina.bloco_disciplina = bloco;
-        info.disciplina.carga_horaria = carga;
-
-        resultado = inserir_no(raiz_disciplinas, info, TIPO_DISCIPLINA);
-    }
-
-    return resultado; // Único ponto de saída
 }
 
 int inserirDisciplinaNoCurso(RBNode* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga) {
     int res = 0;
-    
-    // 1. Busca o curso
     RBNode* no_curso = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
     
     if (no_curso == NULL) {
-        res = -1; // Curso não encontrado
-    } else {
-        // 2. Valida as regras usando a função static acima
-        if (!validarRegras(bloco, no_curso->info.curso.qtd_blocos_curso, carga, no_curso->info.curso.semanas_disciplina)) {
-            res = -2; // Violação de regras
-        } else {
-            // 3. Verifica duplicata na árvore interna de disciplinas
-            if (buscar_no(no_curso->info.curso.raiz_disciplinas, cod_disc, TIPO_DISCIPLINA) != NULL) {
-                res = 0; // Já existe
-            } else {
-                // 4. Prepara a inserção
-                Info info_disc;
-                info_disc.disciplina.codigo_disciplina = cod_disc;
-                strcpy(info_disc.disciplina.nome_disciplina, nome);
-                info_disc.disciplina.bloco_disciplina = bloco;
-                info_disc.disciplina.carga_horaria = carga;
-
-                res = inserir_no(&(no_curso->info.curso.raiz_disciplinas), info_disc, TIPO_DISCIPLINA);
-            }
-        }
+        res = -1; 
+    } else if (!validarRegras(bloco, no_curso->info.curso.qtd_blocos_curso, carga, no_curso->info.curso.semanas_disciplina)) {
+        res = -2;
+    } else if (buscar_no(no_curso->info.curso.raiz_disciplinas, cod_disc, TIPO_DISCIPLINA) == NULL) {
+        Info info_disc;
+        info_disc.disciplina.codigo_disciplina = cod_disc;
+        strcpy(info_disc.disciplina.nome_disciplina, nome);
+        info_disc.disciplina.bloco_disciplina = bloco;
+        info_disc.disciplina.carga_horaria = carga;
+        res = inserir_no(&(no_curso->info.curso.raiz_disciplinas), info_disc, TIPO_DISCIPLINA);
     }
-
+    
     return res;
 }
