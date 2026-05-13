@@ -24,6 +24,8 @@ int main() {
         printf("  [1] Cadastrar Novo Curso\n");
         printf("  [2] Cadastrar Disciplina em Curso\n");
         printf("  [3] Cadastrar Novo Aluno\n");
+        printf("  [4] Listar Cursos e Disciplinas\n"); 
+        printf("  [5] Listar Todos os Alunos\n");     
         printf("  [0] Sair do Sistema\n");
         printf("-----------------------------------------------------------\n");
         printf("  Selecione uma opcao: ");
@@ -39,7 +41,6 @@ int main() {
                 printf("Codigo: "); 
                 scanf("%d", &cod);
 
-                // BLINDAGEM: Verifica se o curso já existe
                 if (buscar_no(raiz_cursos, cod, TIPO_CURSO) != NULL) {
                     printf("\n[ERRO] O curso %d ja esta cadastrado!\n", cod);
                     break;
@@ -63,7 +64,6 @@ int main() {
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
 
-                // BLINDAGEM: Verifica se o curso destino existe
                 RBNode* curso_ref = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
                 if (curso_ref == NULL) {
                     printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
@@ -73,7 +73,6 @@ int main() {
                 printf("Codigo da Disciplina: "); 
                 scanf("%d", &cod_d);
 
-                // BLINDAGEM: Verifica se a disciplina ja existe nesse curso
                 if (buscar_no(curso_ref->info.curso.raiz_disciplinas, cod_d, TIPO_DISCIPLINA) != NULL) {
                     printf("\n[ERRO] A disciplina %d ja existe no curso %s!\n", cod_d, curso_ref->info.curso.nome_curso);
                     break;
@@ -82,7 +81,6 @@ int main() {
                 printf("Nome da Disciplina: "); 
                 scanf(" %[^\n]", nome);
 
-                // TRAVAS DE REGRAS (Item C): Impede continuar com dados invalidos
                 int max_b = curso_ref->info.curso.qtd_blocos_curso;
                 do {
                     printf("Bloco (0 a %d): ", max_b - 1);
@@ -106,7 +104,6 @@ int main() {
                 printf("Matricula: "); 
                 scanf("%d", &cod); 
 
-                // BLINDAGEM: Verifica se a matricula ja existe no sistema
                 if (buscar_no(raiz_alunos, cod, TIPO_ALUNO) != NULL) {
                     printf("\n[ERRO] Matricula %d ja existe!\n", cod);
                     break;
@@ -117,7 +114,6 @@ int main() {
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
 
-                // BLINDAGEM: Verifica se o curso para o aluno existe
                 if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
                     printf("\n[ERRO] Curso %d nao existe! Cadastre o curso primeiro.\n", cod_curso);
                     break;
@@ -132,6 +128,24 @@ int main() {
                     printf("\n[OK] Aluno cadastrado com sucesso!\n");
                 else
                     printf("\n[ERRO] Falha ao cadastrar aluno.\n");
+                break;
+
+            case 4: // RELATÓRIO DE CURSOS
+                printf("\n======= RELATORIO: CURSOS E DISCIPLINAS =======");
+                if (raiz_cursos == NULL) {
+                    printf("\nNenhum curso cadastrado.\n");
+                } else {
+                    imprimirCursos(raiz_cursos); // Função específica
+                }
+                break;
+
+            case 5: // RELATÓRIO DE ALUNOS
+                printf("\n=========== RELATORIO: ALUNOS ============");
+                if (raiz_alunos == NULL) {
+                    printf("\nNenhum aluno cadastrado.\n");
+                } else {
+                    imprimirAlunos(raiz_alunos); // Função específica
+                }
                 break;
 
             case 0:

@@ -182,3 +182,53 @@ int inserirDisciplinaNoCurso(RBNode* raiz_cursos, int cod_curso, int cod_disc, c
     
     return res;
 }
+
+/* --- FUNÇÕES ESPECÍFICAS DE IMPRESSÃO --- */
+
+// 1. Especializada em Disciplinas (imprime sem mergulhar mais, pois é o nível folha)
+void imprimirDisciplinas(RBNode* raiz) {
+    if (raiz != NULL) {
+        imprimirDisciplinas(raiz->esq);
+        printf("\n  -> [DISCIPLINA] ID: %d | Nome: %s | Bloco: %d | Carga: %dh", 
+                raiz->info.disciplina.codigo_disciplina, 
+                raiz->info.disciplina.nome_disciplina, 
+                raiz->info.disciplina.bloco_disciplina, 
+                raiz->info.disciplina.carga_horaria);
+        imprimirDisciplinas(raiz->dir);
+    }
+}
+
+// 2. Especializada em Cursos (imprime o curso e chama a de disciplinas)
+void imprimirCursos(RBNode* raiz) {
+    if (raiz != NULL) {
+        imprimirCursos(raiz->esq);
+        printf("\n[CURSO] ID: %d | Nome: %s | Blocos: %d\n", 
+                raiz->info.curso.codigo_curso, 
+                raiz->info.curso.nome_curso, 
+                raiz->info.curso.qtd_blocos_curso);
+        printf("  -------------------------------------------");
+        
+        if (raiz->info.curso.raiz_disciplinas == NULL) {
+            printf("\n  (Nenhuma disciplina cadastrada neste curso)\n");
+        } else {
+            imprimirDisciplinas(raiz->info.curso.raiz_disciplinas);
+        }
+        
+        printf("\n  -------------------------------------------\n");
+        imprimirCursos(raiz->dir);
+    }
+}
+
+// 3. Especializada em Alunos
+void imprimirAlunos(RBNode* raiz) {
+    if (raiz != NULL) {
+        imprimirAlunos(raiz->esq);
+        printf("\n[ALUNO] Mat: %d | Nome: %s | Curso: %d | Ingresso: %d/%d", 
+                raiz->info.aluno.matricula, 
+                raiz->info.aluno.nome_aluno, 
+                raiz->info.aluno.codigo_curso, 
+                raiz->info.aluno.ano_ingresso, 
+                raiz->info.aluno.semestre_ingresso);
+        imprimirAlunos(raiz->dir);
+    }
+}

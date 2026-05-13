@@ -77,6 +77,8 @@ void trocar_cores(RBNode* H);
 RBNode* rotar_esquerda(RBNode* A);
 RBNode* rotar_direita(RBNode* A);
 RBNode* balancear(RBNode* H);
-
+void imprimirCursos(RBNode* raiz);
+void imprimirAlunos(RBNode* raiz);
+void imprimirDisciplinas(RBNode* raiz);
 
 #endif
