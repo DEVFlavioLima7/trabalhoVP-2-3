@@ -80,5 +80,8 @@ RBNode* balancear(RBNode* H);
 void imprimirCursos(RBNode* raiz);
 void imprimirAlunos(RBNode* raiz);
 void imprimirDisciplinas(RBNode* raiz);
+void listarAlunosPorCurso(RBNode* raiz, int cod_curso);
+void listarAlunosPorCursoEAno(RBNode* raiz, int cod_curso, int ano);
+int contarAlunosNoCurso(RBNode* raiz, int cod_curso);
 
 #endif

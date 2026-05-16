@@ -232,3 +232,63 @@ void imprimirAlunos(RBNode* raiz) {
         imprimirAlunos(raiz->dir);
     }
 }
+
+
+void listarAlunosPorCurso(RBNode* raiz, int cod_curso) {
+    if (raiz != NULL) {
+        // Visita a sub-árvore esquerda
+        listarAlunosPorCurso(raiz->esq, cod_curso);
+        
+        // Processa o nó atual: verifica se é aluno e se o curso bate
+        if (raiz->info.tipo == TIPO_ALUNO && raiz->info.dado.aluno.codigocurso == cod_curso) {
+            printf("Matricula: %d | Nome: %s\n", 
+                   raiz->info.dado.aluno.matriculaaluno, 
+                   raiz->info.dado.aluno.nomealuno);
+        }
+        
+        // Visita a sub-árvore direita
+        listarAlunosPorCurso(raiz->dir, cod_curso);
+    }
+}
+
+// 2. Listar alunos de um curso que entraram em um determinado ano
+void listarAlunosPorCursoEAno(RBNode* raiz, int cod_curso, int ano) {
+    if (raiz != NULL) {
+        // Visita a sub-árvore esquerda
+        listarAlunosPorCursoEAno(raiz->esq, cod_curso, ano);
+        
+        // Processa o nó atual: verifica as três condições
+        if (raiz->info.tipo == TIPO_ALUNO && 
+            raiz->info.dado.aluno.codigocurso == cod_curso && 
+            raiz->info.dado.aluno.ano_ingresso == ano) {
+            printf("Matricula: %d | Nome: %s | Ano: %d\n", 
+                   raiz->info.dado.aluno.matriculaaluno, 
+                   raiz->info.dado.aluno.nomealuno, 
+                   raiz->info.dado.aluno.ano_ingresso);
+        }
+        
+        // Visita a sub-árvore direita
+        listarAlunosPorCursoEAno(raiz->dir, cod_curso, ano);
+    }
+}
+
+// 3. Contar quantos alunos pertencem a um determinado curso (Ponto único de saída)
+int contarAlunosNoCurso(RBNode* raiz, int cod_curso) {
+    int total = 0;
+
+    if (raiz != NULL) {
+        int atual = 0;
+
+        // Se o nó atual for do aluno e do curso procurado, conta 1
+        if (raiz->info.tipo == TIPO_ALUNO && raiz->info.dado.aluno.codigocurso == cod_curso) {
+            atual = 1;
+        }
+
+        // Soma o atual com o que encontrar na esquerda e na direita
+        total = atual + contarAlunosNoCurso(raiz->esq, cod_curso) + 
+                       contarAlunosNoCurso(raiz->dir, cod_curso);
+    }
+
+    return total;
+}
+
