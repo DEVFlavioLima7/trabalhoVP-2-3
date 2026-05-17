@@ -11,8 +11,8 @@ void cabecalho() {
 }
 
 int main() {
-    RBNode* raiz_cursos = NULL;
-    RBNode* raiz_alunos = NULL;
+    rb_node* raiz_cursos = NULL;
+    rb_node* raiz_alunos = NULL;
     
     int opcao, res;
     int cod, blocos, semanas, cod_d, bloco_d, carga;
