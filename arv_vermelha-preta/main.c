@@ -67,7 +67,7 @@ int main() {
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
 
-                RBNode* curso_ref = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
+                rb_node* curso_ref = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
                 if (curso_ref == NULL) {
                     printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
                     break;
@@ -85,18 +85,25 @@ int main() {
                 scanf(" %[^\n]", nome);
 
                 int max_b = curso_ref->info.curso.qtd_blocos_curso;
+                int sem_ref = curso_ref->info.curso.semanas_disciplina;
+                int erros_validacao;
                 do {
                     printf("Bloco (0 a %d): ", max_b - 1);
                     scanf("%d", &bloco_d);
-                    if(bloco_d >= max_b || bloco_d < 0) printf("[!] Bloco fora do limite do curso.\n");
-                } while (bloco_d >= max_b || bloco_d < 0);
-                
-                int sem_ref = curso_ref->info.curso.semanas_disciplina;
-                do {
+
                     printf("Carga Horaria (Multiplo de %d): ", sem_ref);
                     scanf("%d", &carga);
-                    if(carga % sem_ref != 0) printf("[!] Carga horaria deve ser multipla de %d.\n", sem_ref);
-                } while (carga % sem_ref != 0 || carga <= 0);
+
+                    erros_validacao = validarRegrasDetalhe(bloco_d, max_b, carga, sem_ref);
+                    if (erros_validacao != REGRA_OK) {
+                        if (erros_validacao & REGRA_BLOCO_INVALIDO) {
+                            printf("[!] Bloco fora do limite do curso.\n");
+                        }
+                        if (erros_validacao & REGRA_CARGA_INVALIDA) {
+                            printf("[!] Carga horaria deve ser multipla de %d.\n", sem_ref);
+                        }
+                    }
+                } while (erros_validacao != REGRA_OK);
 
                 res = inserirDisciplinaNoCurso(raiz_cursos, cod_curso, cod_d, nome, bloco_d, carga);
                 if (res == 1) printf("\n[OK] Disciplina cadastrada com sucesso!\n");
@@ -155,26 +162,38 @@ int main() {
                 printf("\n>> LISTAR ALUNOS POR CURSO (RUBRO-NEGRA) <<\n");
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
-                printf("\nAlunos do Curso %d:\n", cod_curso);
-                listarAlunosPorCurso(raiz_alunos, cod_curso);
+                if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
+                    printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                } else {
+                    printf("\nAlunos do Curso %d:\n", cod_curso);
+                    listarAlunosPorCurso(raiz_alunos, cod_curso);
+                }
                 break;
 
             case 7: // LISTAR ALUNOS POR CURSO E ANO (Adicionado)
                 printf("\n>> LISTAR ALUNOS POR CURSO E ANO (RUBRO-NEGRA) <<\n");
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
-                printf("Ano de Ingresso: "); 
-                scanf("%d", &ano);
-                printf("\nAlunos do Curso %d ingressos em %d:\n", cod_curso, ano);
-                listarAlunosPorCursoEAno(raiz_alunos, cod_curso, ano);
+                if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
+                    printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                } else {
+                    printf("Ano de Ingresso: "); 
+                    scanf("%d", &ano);
+                    printf("\nAlunos do Curso %d ingressos em %d:\n", cod_curso, ano);
+                    listarAlunosPorCursoEAno(raiz_alunos, cod_curso, ano);
+                }
                 break;
 
             case 8: // CONTAR ALUNOS NO CURSO (Adicionado)
                 printf("\n>> QUANTIDADE DE ALUNOS NO CURSO (RUBRO-NEGRA) <<\n");
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
-                res = contarAlunosNoCurso(raiz_alunos, cod_curso);
-                printf("\nTotal de alunos no curso %d: %d\n", cod_curso, res);
+                if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
+                    printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                } else {
+                    res = contarAlunosNoCurso(raiz_alunos, cod_curso);
+                    printf("\nTotal de alunos no curso %d: %d\n", cod_curso, res);
+                }
                 break;
 
             case 0:

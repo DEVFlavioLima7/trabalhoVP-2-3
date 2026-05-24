@@ -154,13 +154,18 @@ int inserirCurso(rb_node** raiz, int codigo, char nome[], int blocos, int semana
     return res;
 }
 
-int validarRegras(int bloco_disciplina, int qtd_blocos_curso, int carga, int semanas) {
-    int status = 0;
-    if (bloco_disciplina < qtd_blocos_curso && bloco_disciplina >= 0 && 
-        carga % semanas == 0 && carga > 0) {
-        status = 1;
+int validarRegrasDetalhe(int bloco_disciplina, int qtd_blocos_curso, int carga, int semanas) {
+    int erros = REGRA_OK;
+
+    if (bloco_disciplina < 0 || bloco_disciplina >= qtd_blocos_curso) {
+        erros |= REGRA_BLOCO_INVALIDO;
     }
-    return status;
+
+    if (carga <= 0 || carga % semanas != 0) {
+        erros |= REGRA_CARGA_INVALIDA;
+    }
+
+    return erros;
 }
 
 int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga) {
@@ -169,7 +174,7 @@ int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, 
     
     if (no_curso == NULL) {
         res = -1; 
-    } else if (!validarRegras(bloco, no_curso->info.curso.qtd_blocos_curso, carga, no_curso->info.curso.semanas_disciplina)) {
+    } else if (validarRegrasDetalhe(bloco, no_curso->info.curso.qtd_blocos_curso, carga, no_curso->info.curso.semanas_disciplina) != REGRA_OK) {
         res = -2;
     } else if (buscar_no(no_curso->info.curso.raiz_disciplinas, cod_disc, TIPO_DISCIPLINA) == NULL) {
         info info_disc;
@@ -186,7 +191,7 @@ int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, 
 /* --- FUNÇÕES ESPECÍFICAS DE IMPRESSÃO --- */
 
 // 1. Especializada em Disciplinas (imprime sem mergulhar mais, pois é o nível folha)
-void imprimirDisciplinas(RBNode* raiz) {
+void imprimirDisciplinas(rb_node* raiz) {
     if (raiz != NULL) {
         imprimirDisciplinas(raiz->esq);
         printf("\n  -> [DISCIPLINA] ID: %d | Nome: %s | Bloco: %d | Carga: %dh", 
@@ -199,7 +204,7 @@ void imprimirDisciplinas(RBNode* raiz) {
 }
 
 // 2. Especializada em Cursos (imprime o curso e chama a de disciplinas)
-void imprimirCursos(RBNode* raiz) {
+void imprimirCursos(rb_node* raiz) {
     if (raiz != NULL) {
         imprimirCursos(raiz->esq);
         printf("\n[CURSO] ID: %d | Nome: %s | Blocos: %d\n", 
@@ -220,11 +225,11 @@ void imprimirCursos(RBNode* raiz) {
 }
 
 // 3. Especializada em Alunos
-void imprimirAlunos(RBNode* raiz) {
+void imprimirAlunos(rb_node* raiz) {
     if (raiz != NULL) {
         imprimirAlunos(raiz->esq);
         printf("\n[ALUNO] Mat: %d | Nome: %s | Curso: %d | Ingresso: %d/%d", 
-                raiz->info.aluno.matricula, 
+                raiz->info.aluno.matricula_aluno, 
                 raiz->info.aluno.nome_aluno, 
                 raiz->info.aluno.codigo_curso, 
                 raiz->info.aluno.ano_ingresso, 
@@ -234,53 +239,68 @@ void imprimirAlunos(RBNode* raiz) {
 }
 
 
-void listarAlunosPorCurso(RBNode* raiz, int cod_curso) {
-    if (raiz != NULL) {
-        // Visita a sub-árvore esquerda
-        listarAlunosPorCurso(raiz->esq, cod_curso);
-        
-        // Processa o nó atual: verifica se é aluno e se o curso bate
-        if (raiz->info.tipo == TIPO_ALUNO && raiz->info.dado.aluno.codigocurso == cod_curso) {
+int listarAlunosPorCursoRec(rb_node* raiz, int cod_curso) {
+    int total = 0;
+    if (raiz != NULL){
+
+        total += listarAlunosPorCursoRec(raiz->esq, cod_curso);
+
+        if (raiz->tipo == TIPO_ALUNO && raiz->info.aluno.codigo_curso == cod_curso) {
             printf("Matricula: %d | Nome: %s\n", 
-                   raiz->info.dado.aluno.matriculaaluno, 
-                   raiz->info.dado.aluno.nomealuno);
+                raiz->info.aluno.matricula_aluno, 
+                raiz->info.aluno.nome_aluno);
+            total += 1;
         }
-        
-        // Visita a sub-árvore direita
-        listarAlunosPorCurso(raiz->dir, cod_curso);
+
+        total += listarAlunosPorCursoRec(raiz->dir, cod_curso);
+    }
+    return total;
+}
+
+void listarAlunosPorCurso(rb_node* raiz, int cod_curso) {
+    int total = listarAlunosPorCursoRec(raiz, cod_curso);
+    if (total == 0) {
+        printf("(Nenhum aluno cadastrado para este curso)\n");
     }
 }
 
 // 2. Listar alunos de um curso que entraram em um determinado ano
-void listarAlunosPorCursoEAno(RBNode* raiz, int cod_curso, int ano) {
+int listarAlunosPorCursoEAnoRec(rb_node* raiz, int cod_curso, int ano) {
+    int total = 0;
     if (raiz != NULL) {
-        // Visita a sub-árvore esquerda
-        listarAlunosPorCursoEAno(raiz->esq, cod_curso, ano);
-        
-        // Processa o nó atual: verifica as três condições
-        if (raiz->info.tipo == TIPO_ALUNO && 
-            raiz->info.dado.aluno.codigocurso == cod_curso && 
-            raiz->info.dado.aluno.ano_ingresso == ano) {
+        total += listarAlunosPorCursoEAnoRec(raiz->esq, cod_curso, ano);
+
+        if (raiz->tipo == TIPO_ALUNO && 
+            raiz->info.aluno.codigo_curso == cod_curso && 
+            raiz->info.aluno.ano_ingresso == ano) {
             printf("Matricula: %d | Nome: %s | Ano: %d\n", 
-                   raiz->info.dado.aluno.matriculaaluno, 
-                   raiz->info.dado.aluno.nomealuno, 
-                   raiz->info.dado.aluno.ano_ingresso);
+                raiz->info.aluno.matricula_aluno, 
+                raiz->info.aluno.nome_aluno, 
+                raiz->info.aluno.ano_ingresso);
+            total += 1;
         }
-        
-        // Visita a sub-árvore direita
-        listarAlunosPorCursoEAno(raiz->dir, cod_curso, ano);
+
+        total += listarAlunosPorCursoEAnoRec(raiz->dir, cod_curso, ano);
+    }
+        return total;
+    }
+
+void listarAlunosPorCursoEAno(rb_node* raiz, int cod_curso, int ano) {
+    int total = listarAlunosPorCursoEAnoRec(raiz, cod_curso, ano);
+    if (total == 0) {
+        printf("(Nenhum aluno cadastrado para este curso e ano)\n");
     }
 }
 
 // 3. Contar quantos alunos pertencem a um determinado curso (Ponto único de saída)
-int contarAlunosNoCurso(RBNode* raiz, int cod_curso) {
+int contarAlunosNoCurso(rb_node* raiz, int cod_curso) {
     int total = 0;
 
     if (raiz != NULL) {
         int atual = 0;
 
         // Se o nó atual for do aluno e do curso procurado, conta 1
-        if (raiz->info.tipo == TIPO_ALUNO && raiz->info.dado.aluno.codigocurso == cod_curso) {
+        if (raiz->tipo == TIPO_ALUNO && raiz->info.aluno.codigo_curso == cod_curso) {
             atual = 1;
         }
 
