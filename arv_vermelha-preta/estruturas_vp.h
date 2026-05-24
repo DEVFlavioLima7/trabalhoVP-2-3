@@ -3,6 +3,14 @@
 
 #define TAM_NOME 100
 
+struct rbnode;
+
+/* ===================== VALIDACAO ===================== */
+
+#define REGRA_OK 0
+#define REGRA_BLOCO_INVALIDO 1
+#define REGRA_CARGA_INVALIDA 2
+
 /* ===================== CORES ===================== */
 
 typedef enum {
@@ -19,14 +27,12 @@ typedef struct {
     int carga_horaria;
 } disciplina;
 
-struct rb_node; // forward declaration
-
 typedef struct {
     int codigo_curso;
     char nome_curso[TAM_NOME];
     int qtd_blocos_curso;
     int semanas_disciplina;
-    struct rb_node *raiz_disciplinas; // árvore própria
+    struct rbnode *raiz_disciplinas; // árvore própria
 } curso;
 
 typedef struct {
@@ -55,12 +61,35 @@ typedef union {
 
 /* ===================== NÓ RUBRO-NEGRO ===================== */
 
-typedef struct rb_node {
+typedef struct rbnode {
     info info;
     tipo_info tipo;
 
     cor cor;
-    struct rb_node *esq, *dir;
+    struct rbnode *esq, *dir;
 } rb_node;
+
+/* ===================== PROTÓTIPOS ===================== */
+int inserirAluno(rb_node** raiz_alunos, int mat, char nome[], int cod_curso, int ano, int sem);
+int inserirCurso(rb_node** raiz_cursos, int codigo, char nome[], int blocos, int semanas);
+int inserirDisciplina(rb_node** raiz_disciplinas, int cod_disc, char nome[], int bloco, int carga);
+int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga);
+
+int validarRegrasDetalhe(int bloco_disciplina, int qtd_blocos_curso, int carga, int semanas);
+
+int inserir_no(rb_node** raiz, info info, tipo_info tipo);
+rb_node* criar_no(info info, tipo_info tipo);
+rb_node* buscar_no(rb_node* raiz, int chave, tipo_info tipo);
+int obter_cor(rb_node* no);
+void trocar_cores(rb_node* H);
+rb_node* rotar_esquerda(rb_node* A);
+rb_node* rotar_direita(rb_node* A);
+rb_node* balancear(rb_node* H);
+void imprimirCursos(rb_node* raiz);
+void imprimirAlunos(rb_node* raiz);
+void imprimirDisciplinas(rb_node* raiz);
+void listarAlunosPorCurso(rb_node* raiz, int cod_curso);
+void listarAlunosPorCursoEAno(rb_node* raiz, int cod_curso, int ano);
+int contarAlunosNoCurso(rb_node* raiz, int cod_curso);
 
 #endif
