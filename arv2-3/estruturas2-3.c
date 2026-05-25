@@ -199,22 +199,14 @@ int inserirCurso23(arv_2_3** raiz, int codigo, char nome[], int blocos, int sema
     return inserirNo23(raiz, infoComTipo);
 }
 
-/* 2. Validação das Regras de Negócio (Item C do enunciado) */
-int validarRegras23Detalhe(int bloco_disciplina, int qtd_blocos_curso, int carga, int semanas) {
-    int erros = REGRA_OK;
-
-    if (bloco_disciplina < 0 || bloco_disciplina >= qtd_blocos_curso) {
-        erros |= REGRA_BLOCO_INVALIDO;
-    }
-
-    if (carga <= 0 || carga % semanas != 0) {
-        erros |= REGRA_CARGA_INVALIDA;
-    }
-
-    return erros;
+int validarBloco(int bloco, int max_b) {
+    return (bloco >= 0 && bloco < max_b); // Retorna 1 se ok, 0 se erro
 }
 
-/* 3. Inserção de Disciplina vinculada a um Curso */
+int validarCarga(int carga, int semanas) {
+    return (carga > 0 && carga % semanas == 0); // Retorna 1 se ok, 0 se erro
+}
+
 int inserirDisciplinaNoCurso23(arv_2_3* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga) {
     int res = 0; // Ponto único de saída
     
@@ -222,7 +214,8 @@ int inserirDisciplinaNoCurso23(arv_2_3* raiz_cursos, int cod_curso, int cod_disc
     arv_2_3* no_curso = buscar23(raiz_cursos, cod_curso);
     
     if (no_curso == NULL) {
-        res = -1; // Curso não encontrado
+        // Erro: Curso não encontrado
+        res = -1; 
     } else {
         // Como o nó pode ter 1 ou 2 infos, precisamos achar qual delas é o curso alvo
         curso* curso_alvo = NULL;
@@ -232,12 +225,8 @@ int inserirDisciplinaNoCurso23(arv_2_3* raiz_cursos, int cod_curso, int cod_disc
             curso_alvo = &(no_curso->info[1].dado.curso);
         }
 
-        // Valida as regras de negócio usando os dados do curso localizado
-        if (validarRegras23Detalhe(bloco, curso_alvo->qtd_blocos_curso, carga, curso_alvo->semanas_disciplina) != REGRA_OK) {
-            res = -2; // Regras violadas
-        } 
-        // Verifica se a disciplina já existe dentro da árvore de disciplinas desse curso
-        else if (buscar23(curso_alvo->raiz_disciplinas, cod_disc) == NULL) {
+        // Sucesso: Verifica se a disciplina NÃO existe e insere diretamente!
+        if (buscar23(curso_alvo->raiz_disciplinas, cod_disc) == NULL) {
             info_com_tipo info_disc;
             info_disc.tipo = TIPO_DISCIPLINA;
             info_disc.dado.disciplina.codigo_disciplina = cod_disc;
@@ -248,6 +237,7 @@ int inserirDisciplinaNoCurso23(arv_2_3* raiz_cursos, int cod_curso, int cod_disc
             // Insere na sub-árvore 2-3 de disciplinas do curso
             res = inserirNo23(&(curso_alvo->raiz_disciplinas), info_disc);
         }
+        // Obs: Se a disciplina já existir, 'res' continua sendo 0.
     }
     
     return res;
@@ -403,7 +393,7 @@ void imprimirDisciplinas23(arv_2_3* raiz) {
 
 // 2. Especializada em Cursos (Imprime o curso e varre sua árvore interna de disciplinas)
 void imprimirCursos23Rec(arv_2_3* raiz) {
-    if (raiz == NULL){
+    if (raiz != NULL) {
         // Visita o filho esquerdo
         imprimirCursos23Rec(raiz->esq);
 

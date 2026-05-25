@@ -5,12 +5,6 @@
 
 struct rbnode;
 
-/* ===================== VALIDACAO ===================== */
-
-#define REGRA_OK 0
-#define REGRA_BLOCO_INVALIDO 1
-#define REGRA_CARGA_INVALIDA 2
-
 /* ===================== CORES ===================== */
 
 typedef enum {
@@ -75,7 +69,8 @@ int inserirCurso(rb_node** raiz_cursos, int codigo, char nome[], int blocos, int
 int inserirDisciplina(rb_node** raiz_disciplinas, int cod_disc, char nome[], int bloco, int carga);
 int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga);
 
-int validarRegrasDetalhe(int bloco_disciplina, int qtd_blocos_curso, int carga, int semanas);
+int validarBloco(int bloco, int max_b);
+int validarCarga(int carga, int semanas);
 
 int inserir_no(rb_node** raiz, info info, tipo_info tipo);
 rb_node* criar_no(info info, tipo_info tipo);

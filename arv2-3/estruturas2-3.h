@@ -93,7 +93,8 @@ int inserirNo23(arv_2_3 **raiz, info_com_tipo novaInfo);
 
 // Protótipos das operações acadêmicas da 2-3
 int inserirCurso23(arv_2_3** raiz, int codigo, char nome[], int blocos, int semanas);
-int validarRegras23Detalhe(int bloco_disciplina, int qtd_blocos_curso, int carga, int semanas);
+int validarBloco(int bloco, int max_b);
+int validarCarga(int carga, int semanas);
 int inserirDisciplinaNoCurso23(arv_2_3* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga);
 int inserirAluno23(arv_2_3** raiz_alunos, int mat, char nome[], int cod_curso, int ano, int sem);
 // Protótipos das funções específicas de exibição da 2-3

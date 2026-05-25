@@ -44,22 +44,24 @@ int main() {
                 printf("Codigo: "); 
                 scanf("%d", &cod);
 
+                int pode_cadastrar_curso = 1;
                 if (buscar_no(raiz_cursos, cod, TIPO_CURSO) != NULL) {
                     printf("\n[ERRO] O curso %d ja esta cadastrado!\n", cod);
-                    break;
+                    pode_cadastrar_curso = 0;
                 }
-
-                printf("Nome do Curso: "); 
-                scanf(" %[^\n]", nome);
-                printf("Qtd. Blocos: "); 
-                scanf("%d", &blocos);
-                printf("Semanas/Semestre: "); 
-                scanf("%d", &semanas);
-                
-                if (inserirCurso(&raiz_cursos, cod, nome, blocos, semanas))
-                    printf("\n[OK] Curso registrado com sucesso!\n");
-                else
-                    printf("\n[ERRO] Falha na alocacao de memoria.\n");
+                if (pode_cadastrar_curso) {
+                    printf("Nome do Curso: "); 
+                    scanf(" %[^\n]", nome);
+                    printf("Qtd. Blocos: "); 
+                    scanf("%d", &blocos);
+                    printf("Semanas/Semestre: "); 
+                    scanf("%d", &semanas);
+                    
+                    if (inserirCurso(&raiz_cursos, cod, nome, blocos, semanas))
+                        printf("\n[OK] Curso registrado com sucesso!\n");
+                    else
+                        printf("\n[ERRO] Falha na alocacao de memoria.\n");
+                }
                 break;
 
             case 2:
@@ -68,45 +70,59 @@ int main() {
                 scanf("%d", &cod_curso);
 
                 rb_node* curso_ref = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
+                int pode_vincular_disc = 1;
+                
                 if (curso_ref == NULL) {
                     printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
-                    break;
+                    pode_vincular_disc = 0;
                 }
+                
+                if (pode_vincular_disc) {
+                    printf("Codigo da Disciplina: "); 
+                    scanf("%d", &cod_d);
 
-                printf("Codigo da Disciplina: "); 
-                scanf("%d", &cod_d);
+                    // Verifica se a disciplina já existe antes de pedir o resto dos dados
+                    if (buscar_no(curso_ref->info.curso.raiz_disciplinas, cod_d, TIPO_DISCIPLINA) != NULL) {
+                        printf("\n[ERRO] A disciplina %d ja existe no curso %s!\n", cod_d, curso_ref->info.curso.nome_curso);
+                    } else {
+                        printf("Nome da Disciplina: "); 
+                        scanf(" %[^\n]", nome);
 
-                if (buscar_no(curso_ref->info.curso.raiz_disciplinas, cod_d, TIPO_DISCIPLINA) != NULL) {
-                    printf("\n[ERRO] A disciplina %d ja existe no curso %s!\n", cod_d, curso_ref->info.curso.nome_curso);
-                    break;
-                }
+                        int max_b = curso_ref->info.curso.qtd_blocos_curso;
+                        int sem_ref = curso_ref->info.curso.semanas_disciplina;
 
-                printf("Nome da Disciplina: "); 
-                scanf(" %[^\n]", nome);
+                        // 1. Loop exclusivo para validar o Bloco
+                        do {
+                            printf("Bloco (0 a %d): ", max_b - 1);
+                            scanf("%d", &bloco_d);
+                            
+                            if (!validarBloco(bloco_d, max_b)) {
+                                printf("[!] Bloco fora do limite do curso. Tente novamente.\n");
+                            }
+                        } while (!validarBloco(bloco_d, max_b));
 
-                int max_b = curso_ref->info.curso.qtd_blocos_curso;
-                int sem_ref = curso_ref->info.curso.semanas_disciplina;
-                int erros_validacao;
-                do {
-                    printf("Bloco (0 a %d): ", max_b - 1);
-                    scanf("%d", &bloco_d);
+                        // 2. Loop exclusivo para validar a Carga Horária
+                        do {
+                            printf("Carga Horaria (Multiplo de %d): ", sem_ref);
+                            scanf("%d", &carga);
+                            
+                            if (!validarCarga(carga, sem_ref)) {
+                                printf("[!] Carga horaria deve ser multipla de %d. Tente novamente.\n", sem_ref);
+                            }
+                        } while (!validarCarga(carga, sem_ref));
 
-                    printf("Carga Horaria (Multiplo de %d): ", sem_ref);
-                    scanf("%d", &carga);
-
-                    erros_validacao = validarRegrasDetalhe(bloco_d, max_b, carga, sem_ref);
-                    if (erros_validacao != REGRA_OK) {
-                        if (erros_validacao & REGRA_BLOCO_INVALIDO) {
-                            printf("[!] Bloco fora do limite do curso.\n");
-                        }
-                        if (erros_validacao & REGRA_CARGA_INVALIDA) {
-                            printf("[!] Carga horaria deve ser multipla de %d.\n", sem_ref);
+                        // 3. Inserção Segura e Simplificada
+                        res = inserirDisciplinaNoCurso(raiz_cursos, cod_curso, cod_d, nome, bloco_d, carga);
+                        
+                        if (res == 1) {
+                            printf("\n[OK] Disciplina cadastrada com sucesso!\n");
+                        } else if (res == -1) {
+                            printf("\n[ERRO] Curso nao encontrado durante a insercao.\n");
+                        } else {
+                            printf("\n[ERRO] Falha ao cadastrar disciplina.\n");
                         }
                     }
-                } while (erros_validacao != REGRA_OK);
-
-                res = inserirDisciplinaNoCurso(raiz_cursos, cod_curso, cod_d, nome, bloco_d, carga);
-                if (res == 1) printf("\n[OK] Disciplina cadastrada com sucesso!\n");
+                }
                 break;
 
             case 3:
@@ -114,30 +130,35 @@ int main() {
                 printf("Matricula: "); 
                 scanf("%d", &cod); 
 
+                int pode_cadastrar_aluno = 1;
                 if (buscar_no(raiz_alunos, cod, TIPO_ALUNO) != NULL) {
                     printf("\n[ERRO] Matricula %d ja existe!\n", cod);
-                    break;
+                    pode_cadastrar_aluno = 0;
                 }
 
-                printf("Nome do Aluno: "); 
-                scanf(" %[^\n]", nome);
-                printf("Codigo do Curso: "); 
-                scanf("%d", &cod_curso);
+                if (pode_cadastrar_aluno) {
+                    printf("Nome do Aluno: "); 
+                    scanf(" %[^\n]", nome);
+                    printf("Codigo do Curso: "); 
+                    scanf("%d", &cod_curso);
 
-                if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
-                    printf("\n[ERRO] Curso %d nao existe! Cadastre o curso primeiro.\n", cod_curso);
-                    break;
+                    if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
+                        printf("\n[ERRO] Curso %d nao existe! Cadastre o curso primeiro.\n", cod_curso);
+                        pode_cadastrar_aluno = 0;
+                    }
                 }
 
-                printf("Ano de Ingresso: "); 
-                scanf("%d", &ano);
-                printf("Semestre (1 ou 2): "); 
-                scanf("%d", &sem);
+                if (pode_cadastrar_aluno) {
+                        printf("Ano de Ingresso: "); 
+                        scanf("%d", &ano);
+                        printf("Semestre (1 ou 2): "); 
+                        scanf("%d", &sem);
 
-                if (inserirAluno(&raiz_alunos, cod, nome, cod_curso, ano, sem))
-                    printf("\n[OK] Aluno cadastrado com sucesso!\n");
-                else
-                    printf("\n[ERRO] Falha ao cadastrar aluno.\n");
+                        if (inserirAluno(&raiz_alunos, cod, nome, cod_curso, ano, sem))
+                            printf("\n[OK] Aluno cadastrado com sucesso!\n");
+                        else
+                            printf("\n[ERRO] Falha ao cadastrar aluno.\n");
+                }
                 break;
 
             case 4: // RELATÓRIO DE CURSOS

@@ -154,18 +154,12 @@ int inserirCurso(rb_node** raiz, int codigo, char nome[], int blocos, int semana
     return res;
 }
 
-int validarRegrasDetalhe(int bloco_disciplina, int qtd_blocos_curso, int carga, int semanas) {
-    int erros = REGRA_OK;
+int validarBloco(int bloco, int max_b) {
+    return (bloco >= 0 && bloco < max_b); // Retorna 1 se ok, 0 se erro
+}
 
-    if (bloco_disciplina < 0 || bloco_disciplina >= qtd_blocos_curso) {
-        erros |= REGRA_BLOCO_INVALIDO;
-    }
-
-    if (carga <= 0 || carga % semanas != 0) {
-        erros |= REGRA_CARGA_INVALIDA;
-    }
-
-    return erros;
+int validarCarga(int carga, int semanas) {
+    return (carga > 0 && carga % semanas == 0); // Retorna 1 se ok, 0 se erro
 }
 
 int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga) {
@@ -173,17 +167,19 @@ int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, 
     rb_node* no_curso = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
     
     if (no_curso == NULL) {
+        // Erro: Curso não existe
         res = -1; 
-    } else if (validarRegrasDetalhe(bloco, no_curso->info.curso.qtd_blocos_curso, carga, no_curso->info.curso.semanas_disciplina) != REGRA_OK) {
-        res = -2;
     } else if (buscar_no(no_curso->info.curso.raiz_disciplinas, cod_disc, TIPO_DISCIPLINA) == NULL) {
+        // Sucesso: Disciplina não existe, podemos inserir!
         info info_disc;
         info_disc.disciplina.codigo_disciplina = cod_disc;
         strcpy(info_disc.disciplina.nome_disciplina, nome);
         info_disc.disciplina.bloco_disciplina = bloco;
         info_disc.disciplina.carga_horaria = carga;
+        
         res = inserir_no(&(no_curso->info.curso.raiz_disciplinas), info_disc, TIPO_DISCIPLINA);
     }
+    // Obs: Se a disciplina já existir, 'res' continua sendo 0.
     
     return res;
 }
