@@ -66,7 +66,6 @@ typedef struct rbnode {
 /* ===================== PROTÓTIPOS ===================== */
 int inserirAluno(rb_node** raiz_alunos, int mat, char nome[], int cod_curso, int ano, int sem);
 int inserirCurso(rb_node** raiz_cursos, int codigo, char nome[], int blocos, int semanas);
-int inserirDisciplina(rb_node** raiz_disciplinas, int cod_disc, char nome[], int bloco, int carga);
 int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga);
 
 int validarBloco(int bloco, int max_b);
