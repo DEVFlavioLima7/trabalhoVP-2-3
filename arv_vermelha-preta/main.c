@@ -24,11 +24,12 @@ int main() {
         printf("  [1] Cadastrar Novo Curso\n");
         printf("  [2] Cadastrar Disciplina em Curso\n");
         printf("  [3] Cadastrar Novo Aluno\n");
-        printf("  [4] Listar Cursos e Disciplinas\n"); 
-        printf("  [5] Listar Todos os Alunos\n");     
-        printf("  [6] Listar Alunos de um Curso\n");         // Adicionado
-        printf("  [7] Listar Alunos por Curso e Ano\n");     // Adicionado
-        printf("  [8] Contar Alunos em um Curso\n");        // Adicionado
+        printf("  [4] Imprimir Árvore de Cursos\n");
+        printf("  [5] Imprimir Dados de um Curso\n"); 
+        printf("  [6] Listar Todos os Alunos\n");     
+        printf("  [7] Listar Alunos de um Curso\n");         // Adicionado
+        printf("  [8] Listar Alunos por Curso e Ano\n");     // Adicionado
+        printf("  [9] Contar Alunos em um Curso\n");        // Adicionado
         printf("  [0] Sair do Sistema\n");
         printf("-----------------------------------------------------------\n");
         printf("  Selecione uma opcao: ");
@@ -161,16 +162,31 @@ int main() {
                 }
                 break;
 
-            case 4: // RELATÓRIO DE CURSOS
-                printf("\n======= RELATORIO: CURSOS E DISCIPLINAS =======");
+            case 4: 
+                printf("\n=========== ARVORE DE CURSOS ============");
                 if (raiz_cursos == NULL) {
                     printf("\nNenhum curso cadastrado.\n");
                 } else {
-                    imprimirCursos(raiz_cursos); 
+                    imprimirArvoreCursos(raiz_cursos); 
                 }
                 break;
 
-            case 5: // RELATÓRIO DE ALUNOS
+           case 5: 
+                printf("\n=========== DADOS DE UM CURSO ============\n");
+                
+                printf("Codigo do Curso: ");
+                scanf("%d", &cod_curso);
+                
+                if (raiz_cursos == NULL) {
+                    // Cobre o cenário da árvore estar completamente vazia desde o início
+                    printf("\nNenhum curso cadastrado.\n");
+                } else {
+                    // A própria função vai procurar. Se achar, imprime. Se não achar, dá o erro.
+                    imprimirDadosCursos(raiz_cursos, cod_curso);
+                }
+                break;
+
+            case 6: // RELATÓRIO DE ALUNOS
                 printf("\n=========== RELATORIO: ALUNOS ============");
                 if (raiz_alunos == NULL) {
                     printf("\nNenhum aluno cadastrado.\n");
@@ -179,7 +195,7 @@ int main() {
                 }
                 break;
 
-            case 6: // LISTAR ALUNOS POR CURSO (Adicionado)
+            case 7: // LISTAR ALUNOS POR CURSO (Adicionado)
                 printf("\n>> LISTAR ALUNOS POR CURSO (RUBRO-NEGRA) <<\n");
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
@@ -191,7 +207,7 @@ int main() {
                 }
                 break;
 
-            case 7: // LISTAR ALUNOS POR CURSO E ANO (Adicionado)
+            case 8: // LISTAR ALUNOS POR CURSO E ANO (Adicionado)
                 printf("\n>> LISTAR ALUNOS POR CURSO E ANO (RUBRO-NEGRA) <<\n");
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
@@ -205,7 +221,7 @@ int main() {
                 }
                 break;
 
-            case 8: // CONTAR ALUNOS NO CURSO (Adicionado)
+            case 9: // CONTAR ALUNOS NO CURSO (Adicionado)
                 printf("\n>> QUANTIDADE DE ALUNOS NO CURSO (RUBRO-NEGRA) <<\n");
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);

@@ -199,24 +199,47 @@ void imprimirDisciplinas(rb_node* raiz) {
     }
 }
 
-// 2. Especializada em Cursos (imprime o curso e chama a de disciplinas)
-void imprimirCursos(rb_node* raiz) {
+void imprimirArvoreCursos(rb_node* raiz) {
     if (raiz != NULL) {
-        imprimirCursos(raiz->esq);
-        printf("\n[CURSO] ID: %d | Nome: %s | Blocos: %d\n", 
-                raiz->info.curso.codigo_curso, 
-                raiz->info.curso.nome_curso, 
-                raiz->info.curso.qtd_blocos_curso);
-        printf("  -------------------------------------------");
+        imprimirArvoreCursos(raiz->esq);
+        printf("\n[CURSO] ID: %d | Nome: %s",
+               raiz->info.curso.codigo_curso,
+               raiz->info.curso.nome_curso);
+        imprimirArvoreCursos(raiz->dir);
+    }
+}
+// 2. Especializada em Cursos (imprime os dados de um curso conforme o código)
+void imprimirDadosCursos(rb_node* raiz, int codigo_curso) {
+    if (raiz != NULL) {
         
-        if (raiz->info.curso.raiz_disciplinas == NULL) {
-            printf("\n  (Nenhuma disciplina cadastrada neste curso)\n");
-        } else {
-            imprimirDisciplinas(raiz->info.curso.raiz_disciplinas);
+        // Busca recursiva pela esquerda
+        if (codigo_curso < raiz->info.curso.codigo_curso) {
+            imprimirDadosCursos(raiz->esq, codigo_curso);
         }
-        
-        printf("\n  -------------------------------------------\n");
-        imprimirCursos(raiz->dir);
+        // Busca recursiva pela direita
+        else if (codigo_curso > raiz->info.curso.codigo_curso) {
+            imprimirDadosCursos(raiz->dir, codigo_curso);
+        }
+        // Caso base: encontrou o curso!
+        else {
+            printf("\n[CURSO] ID: %d | Nome: %s | Blocos: %d\n", 
+                   raiz->info.curso.codigo_curso, 
+                   raiz->info.curso.nome_curso, 
+                   raiz->info.curso.qtd_blocos_curso);
+            printf("  -------------------------------------------");
+            
+            if (raiz->info.curso.raiz_disciplinas == NULL) {
+                printf("\n  (Nenhuma disciplina cadastrada neste curso)\n");
+            } else {
+                imprimirDisciplinas(raiz->info.curso.raiz_disciplinas);
+            }
+            
+            printf("\n  -------------------------------------------\n");
+        }
+    } 
+    // Se a raiz for NULL, chegamos a um "fundo falso" da árvore e o curso não existe.
+    else {
+        printf("\n[ERRO] Curso %d nao encontrado!\n", codigo_curso);
     }
 }
 
