@@ -36,6 +36,7 @@ int main() {
         printf("  [13] Listar Alunos de um Curso por Ano de Ingresso\n"); // Adicionado
         printf("  [14] Contar Alunos em um Curso\n");        // Adicionado
         printf("  [15] Excluir Disciplina de um Curso\n");
+        printf("  [16] Excluir Curso\n");
         printf("  [0] Sair do Sistema\n");
         printf("-----------------------------------------------------------\n");
         printf("  Selecione uma opcao: ");
@@ -313,25 +314,45 @@ int main() {
                 break;
 
             case 15:
-                printf("\n>> EXCLUIR DISCIPLINA DE UM CURSO (RUBRO-NEGRA) <<\n");
-                printf("Codigo do Curso: "); 
+              
+                printf("\n/---------- EXCLUIR DISCIPLINA ----------/\n");
+                printf("Codigo do Curso: ");
                 scanf("%d", &cod_curso);
-                if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
+                
+                printf("Codigo da Disciplina: ");
+                scanf("%d", &cod_d);
+
+                // Chama a função principal de exclusão
+                res = excluirDisciplinaDoCurso(raiz_cursos, cod_curso, cod_d);
+                
+                // Trata as respostas mapeadas na sua função
+                if (res == 1) {
+                    printf("\n[OK] Disciplina removida com sucesso!\n");
+                } else if (res == -1) {
                     printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
-                } else {
-                    printf("Codigo da Disciplina a ser excluida: ");
-                    scanf("%d", &cod_d);
-                    rb_node* curso_ref = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
-                    if (buscar_no(curso_ref->info.curso.raiz_disciplinas, cod_d, TIPO_DISCIPLINA) == NULL) {
-                        printf("\n[ERRO] Disciplina %d nao encontrada no curso %d!\n", cod_d, cod_curso);
-                    } else {
-                        curso_ref->info.curso.raiz_disciplinas = remover_no_disciplina(curso_ref->info.curso.raiz_disciplinas, cod_d);
-                        printf("\n[OK] Disciplina %d excluida do curso %d com sucesso!\n", cod_d, cod_curso);
-                    }
+                } else if (res == -2) {
+                    printf("\n[ERRO] A disciplina %d nao pertence ao curso %d ou nao existe.\n", cod_d, cod_curso);
+                }
+                break;
+            
+            case 16:
+                printf("\n/---------- EXCLUIR CURSO ----------/\n");
+                printf("Codigo do Curso: ");
+                scanf("%d", &cod_curso);
+
+                // Passamos &raiz_cursos (com o "e comercial") porque a raiz principal pode mudar!
+                res = excluirCurso(&raiz_cursos, cod_curso);
+
+                if (res == 1) {
+                    printf("\n[OK] Curso removido com sucesso!\n");
+                } else if (res == -1) {
+                    printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                } else if (res == -2) {
+                    printf("\n[ERRO] O curso %d nao pode ser excluido pois possui disciplinas cadastradas.\n", cod_curso);
+                    printf("       Remova todas as disciplinas deste curso primeiro.\n");
                 }
                 break;
 
-            
             case 0:
                 printf("\nFinalizando sessao. Ate logo!\n");
                 break;

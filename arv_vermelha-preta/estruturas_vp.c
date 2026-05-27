@@ -626,3 +626,78 @@ int excluirDisciplinaDoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc) 
 
     return res;
 }
+
+// Função recursiva para remover um nó (curso) da Árvore Rubro-Negra Principal
+rb_node* remover_no_curso(rb_node* raiz, int cod_curso) {
+    rb_node* resultado = NULL;
+
+    if (raiz == NULL) {
+        resultado = NULL;
+    } 
+    else if (cod_curso < raiz->info.curso.codigo_curso) {
+        if (raiz->esq != NULL && obter_cor(raiz->esq) == PRETO && obter_cor(raiz->esq->esq) == PRETO) {
+            raiz = moverRedEsq(raiz);
+        }
+        raiz->esq = remover_no_curso(raiz->esq, cod_curso);
+        resultado = balancear(raiz);
+    } 
+    else {
+        if (obter_cor(raiz->esq) == VERMELHO) {
+            raiz = rotar_direita(raiz);
+        }
+        
+        // Nó encontrado e é uma folha
+        if (cod_curso == raiz->info.curso.codigo_curso && raiz->dir == NULL) {
+            free(raiz);
+            resultado = NULL; 
+        } else {
+            if (raiz->dir != NULL && obter_cor(raiz->dir) == PRETO && obter_cor(raiz->dir->esq) == PRETO) {
+                raiz = moverRedDir(raiz);
+            }
+            
+            // Nó encontrado, mas tem filhos à direita
+            if (cod_curso == raiz->info.curso.codigo_curso) {
+                rb_node* menor = procurarMenor(raiz->dir);
+                
+                // Copia os dados do curso sucessor
+                raiz->info.curso = menor->info.curso; 
+                
+                // Usa a SUA removerMenor original!
+                raiz->dir = removerMenor(raiz->dir);
+            } else {
+                raiz->dir = remover_no_curso(raiz->dir, cod_curso);
+            }
+            
+            resultado = balancear(raiz);
+        }
+    }
+    
+    return resultado;
+}
+
+// Retorna 1 (Sucesso), -1 (Não encontrado) ou -2 (Possui disciplinas)
+int excluirCurso(rb_node** raiz_cursos, int cod_curso) {
+    int res = 1; // 1 = Sucesso por padrão
+    
+    // Busca o curso sem descer o ponteiro duplo ainda
+    rb_node* no_curso = buscar_no(*raiz_cursos, cod_curso, TIPO_CURSO);
+
+    if (no_curso == NULL) {
+        res = -1; // Erro: Curso não encontrado
+    } 
+    // Regra de Negócio: O curso tem alguma disciplina pendurada nele?
+    else if (no_curso->info.curso.raiz_disciplinas != NULL) {
+        res = -2; // Erro: Violação de integridade (Existem disciplinas)
+    } 
+    else {
+        // Tudo certo! O curso existe e está vazio. Podemos deletar.
+        *raiz_cursos = remover_no_curso(*raiz_cursos, cod_curso);
+
+        // Garante a raiz preta
+        if (*raiz_cursos != NULL) {
+            (*raiz_cursos)->cor = PRETO; 
+        }
+    }
+
+    return res;
+}
