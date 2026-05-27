@@ -184,6 +184,57 @@ int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, 
     return res;
 }
 
+rb_node *removerMenor(rb_node *raiz) {
+    rb_node *resultado = NULL;
+
+    if (raiz->esq == NULL) {
+        free(raiz);
+        resultado = NULL;
+    } else {
+        if (obter_cor(raiz->esq) == PRETO && obter_cor(raiz->esq->esq) == PRETO) {
+            raiz = moverRedEsq(raiz);
+        }
+        raiz->esq = removerMenor(raiz->esq);
+        resultado = balancear(raiz);
+    }
+    
+    return resultado;
+}
+
+rb_node *procurarMenor(rb_node *atual) {
+    rb_node *resultado = NULL;
+    
+    if (atual != NULL) {
+        while (atual->esq != NULL) {
+            atual = atual->esq;
+        }
+        resultado = atual;
+    }
+    
+    return resultado;
+}
+
+rb_node *moverRedEsq(rb_node *raiz) {
+    trocar_cores(raiz);
+    if (obter_cor(raiz->dir->esq) == VERMELHO) {
+        raiz->dir = rotar_direita(raiz->dir);
+        raiz = rotar_esquerda(raiz);
+        trocar_cores(raiz);
+    }
+    return raiz;
+}
+
+rb_node *moverRedDir(rb_node *raiz) {
+    trocar_cores(raiz);
+    if (obter_cor(raiz->esq->esq) == VERMELHO) {
+        raiz = rotar_direita(raiz);
+        trocar_cores(raiz);
+    }
+    return raiz;
+}
+
+
+
 /* --- FUNÇÕES ESPECÍFICAS DE IMPRESSÃO --- */
 
 // 1. Especializada em Disciplinas (imprime sem mergulhar mais, pois é o nível folha)
@@ -513,4 +564,65 @@ void imprimirDisciplinasPorCargaHoraria(rb_node* raiz_cursos, int codigo_curso, 
     } else {
         printf("\n[ERRO] Curso %d nao encontrado.\n", codigo_curso);
     }
+}
+
+/*Função de Exclusão: */
+
+rb_node* remover_no_disciplina(rb_node* raiz, int cod_disc) {
+    rb_node* resultado = NULL;
+
+    if (cod_disc < raiz->info.disciplina.codigo_disciplina) {
+        if (obter_cor(raiz->esq) == PRETO && raiz->esq != NULL && obter_cor(raiz->esq->esq) == PRETO) {
+            raiz = moverRedEsq(raiz);
+        }
+        raiz->esq = remover_no_disciplina(raiz->esq, cod_disc);
+        resultado = balancear(raiz);
+    } else {
+        if (obter_cor(raiz->esq) == VERMELHO) {
+            raiz = rotar_direita(raiz);
+        }
+        
+        // Nó encontrado e é uma folha
+        if (cod_disc == raiz->info.disciplina.codigo_disciplina && raiz->dir == NULL) {
+            free(raiz);
+            resultado = NULL; // Única saída para este caso
+        } else {
+            if (obter_cor(raiz->dir) == PRETO && raiz->dir != NULL && obter_cor(raiz->dir->esq) == PRETO) {
+                raiz = moverRedDir(raiz);
+            }
+            
+            // Nó encontrado, mas tem filhos à direita
+            if (cod_disc == raiz->info.disciplina.codigo_disciplina) {
+                rb_node* menor = procurarMenor(raiz->dir);
+                raiz->info.disciplina = menor->info.disciplina; 
+                raiz->dir = removerMenor(raiz->dir);
+            } else {
+                raiz->dir = remover_no_disciplina(raiz->dir, cod_disc);
+            }
+            
+            resultado = balancear(raiz);
+        }
+    }
+    
+    return resultado;
+}
+
+int excluirDisciplinaDoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc) {
+    int res = 1; // 1 = Sucesso por padrão
+    rb_node* no_curso = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
+
+    if (no_curso == NULL) {
+        res = -1; // Erro: Curso não encontrado
+    } else if (buscar_no(no_curso->info.curso.raiz_disciplinas, cod_disc, TIPO_DISCIPLINA) == NULL) {
+        res = -2; // Erro: Disciplina não encontrada neste curso
+    } else {
+        // Tudo certo para excluir
+        no_curso->info.curso.raiz_disciplinas = remover_no_disciplina(no_curso->info.curso.raiz_disciplinas, cod_disc);
+
+        if (no_curso->info.curso.raiz_disciplinas != NULL) {
+            no_curso->info.curso.raiz_disciplinas->cor = PRETO; 
+        }
+    }
+
+    return res;
 }

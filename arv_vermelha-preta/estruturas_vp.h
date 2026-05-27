@@ -93,5 +93,11 @@ void imprimirDisciplinasPorCargaHoraria(rb_node* raiz_cursos, int codigo_curso, 
 void listarAlunosPorCurso(rb_node* raiz, int cod_curso);
 void listarAlunosPorCursoEAno(rb_node* raiz, int cod_curso, int ano);
 int contarAlunosNoCurso(rb_node* raiz, int cod_curso);
+rb_node* remover_no_disciplina(rb_node* raiz, int cod_disc);
+rb_node *moverRedEsq(rb_node *raiz);
+rb_node *moverRedDir(rb_node *raiz);
+rb_node* procurarMenor(rb_node* raiz);
+rb_node* removerMenor(rb_node* raiz);
+
 
 #endif
