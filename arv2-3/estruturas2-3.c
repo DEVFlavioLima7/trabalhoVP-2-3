@@ -158,28 +158,28 @@ arv_2_3* insere23Recursivo(arv_2_3 *no, info_com_tipo novaInfo, info_com_tipo *p
 
 /* Interface pública para inserção (Trata a explosão da raiz se necessário) */
 int inserirNo23(arv_2_3 **raiz, info_com_tipo novaInfo) {
+    int res = 1;
+
     // Evita duplicatas usando a busca que já criamos
     if (buscar23(*raiz, obterChave23(novaInfo)) != NULL) {
-        return 0; // Código/Matrícula já existe
-    }
-
-    // Se a árvore estiver completamente vazia, cria a raiz inicial
-    if (*raiz == NULL) {
+        res = 0; // Código/Matrícula já existe
+    } else if (*raiz == NULL) {
+        // Se a árvore estiver completamente vazia, cria a raiz inicial
         *raiz = criarNo23(novaInfo, NULL, NULL);
-        return 1;
+        res = (*raiz != NULL);
+    } else {
+        info_com_tipo promove;
+        int houvePromocao = 0;
+        arv_2_3 *maiorFilho = insere23Recursivo(*raiz, novaInfo, &promove, &houvePromocao);
+
+        // Se a raiz estourou, a árvore cresce 1 nível para cima
+        if (houvePromocao) {
+            arv_2_3 *novaRaiz = criarNo23(promove, *raiz, maiorFilho);
+            *raiz = novaRaiz;
+        }
     }
 
-    info_com_tipo promove;
-    int houvePromocao = 0;
-    arv_2_3 *maiorFilho = insere23Recursivo(*raiz, novaInfo, &promove, &houvePromocao);
-
-    // Se a raiz estourou, a árvore cresce 1 nível para cima
-    if (houvePromocao) {
-        arv_2_3 *novaRaiz = criarNo23(promove, *raiz, maiorFilho);
-        *raiz = novaRaiz;
-    }
-
-    return 1; // Inserção concluída com sucesso
+    return res;
 }
 
 /* ============================================================
@@ -359,6 +359,37 @@ int contarAlunosNoCurso23(arv_2_3* raiz, int cod_curso) {
     return total;
 }
 
+curso* obterCursoNo23(arv_2_3* no, int codigo_curso) {
+    curso* res = NULL;
+
+    if (no != NULL) {
+        if (no->info[0].tipo == TIPO_CURSO && no->info[0].dado.curso.codigo_curso == codigo_curso) {
+            res = &(no->info[0].dado.curso);
+        } else if (no->n_infos == 2 && no->info[1].tipo == TIPO_CURSO &&
+                   no->info[1].dado.curso.codigo_curso == codigo_curso) {
+            res = &(no->info[1].dado.curso);
+        }
+    }
+
+    return res;
+}
+
+disciplina* obterDisciplinaNo23(arv_2_3* no, int codigo_disciplina) {
+    disciplina* res = NULL;
+
+    if (no != NULL) {
+        if (no->info[0].tipo == TIPO_DISCIPLINA &&
+            no->info[0].dado.disciplina.codigo_disciplina == codigo_disciplina) {
+            res = &(no->info[0].dado.disciplina);
+        } else if (no->n_infos == 2 && no->info[1].tipo == TIPO_DISCIPLINA &&
+                   no->info[1].dado.disciplina.codigo_disciplina == codigo_disciplina) {
+            res = &(no->info[1].dado.disciplina);
+        }
+    }
+
+    return res;
+}
+
 /* ============================================================
    FUNÇÕES DE IMPRESSÃO ESPECÍFICAS - ÁRVORE 2-3
    ============================================================ */
@@ -434,9 +465,206 @@ void imprimirCursos23Rec(arv_2_3* raiz) {
 void imprimirCursos23(arv_2_3* raiz) {
     if (raiz == NULL) {
         printf("\nNenhum curso cadastrado.\n");
-        return;
+    } else {
+        imprimirCursos23Rec(raiz);
     }
-    imprimirCursos23Rec(raiz);
+}
+
+
+void imprimirDadosCursos23(arv_2_3* raiz, int codigo_curso) {
+    arv_2_3* no = buscar23(raiz, codigo_curso);
+    curso* curso_alvo = obterCursoNo23(no, codigo_curso);
+
+    if (curso_alvo == NULL) {
+        printf("\n[ERRO] Curso %d nao encontrado!\n", codigo_curso);
+    } else {
+        printf("\n[CURSO] ID: %d | Nome: %s | Blocos: %d\n",
+               curso_alvo->codigo_curso,
+               curso_alvo->nome_curso,
+               curso_alvo->qtd_blocos_curso);
+        printf("  -------------------------------------------");
+
+        if (curso_alvo->raiz_disciplinas == NULL) {
+            printf("\n  (Nenhuma disciplina cadastrada neste curso)\n");
+        } else {
+            imprimirDisciplinas23(curso_alvo->raiz_disciplinas);
+        }
+
+        printf("\n  -------------------------------------------\n");
+    }
+}
+
+void imprimirCursosComMesmaQtdBlocos23(arv_2_3* raiz, int blocos_ref, int* encontrou) {
+    if (raiz != NULL) {
+        imprimirCursosComMesmaQtdBlocos23(raiz->esq, blocos_ref, encontrou);
+
+        if (raiz->info[0].tipo == TIPO_CURSO && raiz->info[0].dado.curso.qtd_blocos_curso == blocos_ref) {
+            printf("\n[CURSO] ID: %d | Nome: %s | Blocos: %d",
+                   raiz->info[0].dado.curso.codigo_curso,
+                   raiz->info[0].dado.curso.nome_curso,
+                   raiz->info[0].dado.curso.qtd_blocos_curso);
+            *encontrou = 1;
+        }
+
+        imprimirCursosComMesmaQtdBlocos23(raiz->cen, blocos_ref, encontrou);
+
+        if (raiz->n_infos == 2) {
+            if (raiz->info[1].tipo == TIPO_CURSO && raiz->info[1].dado.curso.qtd_blocos_curso == blocos_ref) {
+                printf("\n[CURSO] ID: %d | Nome: %s | Blocos: %d",
+                       raiz->info[1].dado.curso.codigo_curso,
+                       raiz->info[1].dado.curso.nome_curso,
+                       raiz->info[1].dado.curso.qtd_blocos_curso);
+                *encontrou = 1;
+            }
+
+            imprimirCursosComMesmaQtdBlocos23(raiz->dir, blocos_ref, encontrou);
+        }
+    }
+}
+
+void imprimirArvoreDisciplinas23(arv_2_3* raiz_cursos, int codigo_curso) {
+    arv_2_3* no = buscar23(raiz_cursos, codigo_curso);
+    curso* curso_alvo = obterCursoNo23(no, codigo_curso);
+
+    if (curso_alvo == NULL) {
+        printf("\n[ERRO] Curso %d nao encontrado.\n", codigo_curso);
+    } else {
+        printf("\n--- Disciplinas do Curso: %s ---\n", curso_alvo->nome_curso);
+
+        if (curso_alvo->raiz_disciplinas != NULL) {
+            imprimirDisciplinas23(curso_alvo->raiz_disciplinas);
+            printf("\n");
+        } else {
+            printf("  (Nenhuma disciplina cadastrada neste curso)\n");
+        }
+    }
+}
+
+void imprimirDadosDisciplina23(arv_2_3* raiz_cursos, int codigo_curso, int codigo_disciplina) {
+    arv_2_3* no_curso = buscar23(raiz_cursos, codigo_curso);
+    curso* curso_alvo = obterCursoNo23(no_curso, codigo_curso);
+
+    if (curso_alvo == NULL) {
+        printf("\n[ERRO] Curso %d nao encontrado.\n", codigo_curso);
+    } else {
+        arv_2_3* no_disc = buscar23(curso_alvo->raiz_disciplinas, codigo_disciplina);
+        disciplina* disc = obterDisciplinaNo23(no_disc, codigo_disciplina);
+
+        if (disc == NULL) {
+            printf("\n[ERRO] Disciplina %d nao encontrada no curso %d.\n", codigo_disciplina, codigo_curso);
+        } else {
+            printf("\n[DISCIPLINA] ID: %d | Nome: %s | Bloco: %d | Carga: %dh\n",
+                   disc->codigo_disciplina,
+                   disc->nome_disciplina,
+                   disc->bloco_disciplina,
+                   disc->carga_horaria);
+        }
+    }
+}
+
+void imprimirDisciplinasPorBlocoRec23(arv_2_3* raiz_disc, int bloco_ref, int* encontrou) {
+    if (raiz_disc != NULL) {
+        imprimirDisciplinasPorBlocoRec23(raiz_disc->esq, bloco_ref, encontrou);
+
+        if (raiz_disc->info[0].tipo == TIPO_DISCIPLINA &&
+            raiz_disc->info[0].dado.disciplina.bloco_disciplina == bloco_ref) {
+            printf("\n  -> [DISCIPLINA] ID: %d | Nome: %s | Carga: %dh",
+                   raiz_disc->info[0].dado.disciplina.codigo_disciplina,
+                   raiz_disc->info[0].dado.disciplina.nome_disciplina,
+                   raiz_disc->info[0].dado.disciplina.carga_horaria);
+            *encontrou = 1;
+        }
+
+        imprimirDisciplinasPorBlocoRec23(raiz_disc->cen, bloco_ref, encontrou);
+
+        if (raiz_disc->n_infos == 2) {
+            if (raiz_disc->info[1].tipo == TIPO_DISCIPLINA &&
+                raiz_disc->info[1].dado.disciplina.bloco_disciplina == bloco_ref) {
+                printf("\n  -> [DISCIPLINA] ID: %d | Nome: %s | Carga: %dh",
+                       raiz_disc->info[1].dado.disciplina.codigo_disciplina,
+                       raiz_disc->info[1].dado.disciplina.nome_disciplina,
+                       raiz_disc->info[1].dado.disciplina.carga_horaria);
+                *encontrou = 1;
+            }
+
+            imprimirDisciplinasPorBlocoRec23(raiz_disc->dir, bloco_ref, encontrou);
+        }
+    }
+}
+
+void imprimirDisciplinasPorBloco23(arv_2_3* raiz_cursos, int codigo_curso, int bloco) {
+    arv_2_3* no_curso = buscar23(raiz_cursos, codigo_curso);
+    curso* curso_alvo = obterCursoNo23(no_curso, codigo_curso);
+
+    if (curso_alvo == NULL) {
+        printf("\n[ERRO] Curso %d nao encontrado.\n", codigo_curso);
+    } else if (bloco >= curso_alvo->qtd_blocos_curso || bloco < 0) {
+        printf("\n[ERRO] Bloco %d invalido!\n", bloco);
+        printf("O curso %s possui o limite de %d bloco(s).\n",
+               curso_alvo->nome_curso,
+               curso_alvo->qtd_blocos_curso);
+    } else {
+        printf("\n--- Disciplinas do Bloco %d (Curso %d) ---", bloco, codigo_curso);
+
+        int achou = 0;
+        imprimirDisciplinasPorBlocoRec23(curso_alvo->raiz_disciplinas, bloco, &achou);
+
+        if (achou == 0) {
+            printf("\n  (Nenhuma disciplina encontrada no bloco %d)\n", bloco);
+        } else {
+            printf("\n");
+        }
+    }
+}
+
+void imprimirDisciplinasPorCHRec23(arv_2_3* raiz_disc, int ch_ref, int* encontrou) {
+    if (raiz_disc != NULL) {
+        imprimirDisciplinasPorCHRec23(raiz_disc->esq, ch_ref, encontrou);
+
+        if (raiz_disc->info[0].tipo == TIPO_DISCIPLINA &&
+            raiz_disc->info[0].dado.disciplina.carga_horaria == ch_ref) {
+            printf("\n  -> [DISCIPLINA] ID: %d | Nome: %s | Bloco: %d",
+                   raiz_disc->info[0].dado.disciplina.codigo_disciplina,
+                   raiz_disc->info[0].dado.disciplina.nome_disciplina,
+                   raiz_disc->info[0].dado.disciplina.bloco_disciplina);
+            *encontrou = 1;
+        }
+
+        imprimirDisciplinasPorCHRec23(raiz_disc->cen, ch_ref, encontrou);
+
+        if (raiz_disc->n_infos == 2) {
+            if (raiz_disc->info[1].tipo == TIPO_DISCIPLINA &&
+                raiz_disc->info[1].dado.disciplina.carga_horaria == ch_ref) {
+                printf("\n  -> [DISCIPLINA] ID: %d | Nome: %s | Bloco: %d",
+                       raiz_disc->info[1].dado.disciplina.codigo_disciplina,
+                       raiz_disc->info[1].dado.disciplina.nome_disciplina,
+                       raiz_disc->info[1].dado.disciplina.bloco_disciplina);
+                *encontrou = 1;
+            }
+
+            imprimirDisciplinasPorCHRec23(raiz_disc->dir, ch_ref, encontrou);
+        }
+    }
+}
+
+void imprimirDisciplinasPorCargaHoraria23(arv_2_3* raiz_cursos, int codigo_curso, int ch_ref) {
+    arv_2_3* no_curso = buscar23(raiz_cursos, codigo_curso);
+    curso* curso_alvo = obterCursoNo23(no_curso, codigo_curso);
+
+    if (curso_alvo == NULL) {
+        printf("\n[ERRO] Curso %d nao encontrado.\n", codigo_curso);
+    } else {
+        printf("\n--- Disciplinas com Carga Horaria de %dh (Curso %d) ---", ch_ref, codigo_curso);
+
+        int achou = 0;
+        imprimirDisciplinasPorCHRec23(curso_alvo->raiz_disciplinas, ch_ref, &achou);
+
+        if (achou == 0) {
+            printf("\n  (Nenhuma disciplina com %dh encontrada)\n", ch_ref);
+        } else {
+            printf("\n");
+        }
+    }
 }
 
 // 3. Especializada em Alunos
@@ -474,7 +702,7 @@ void imprimirAlunos23Rec(arv_2_3* raiz) {
 void imprimirAlunos23(arv_2_3* raiz) {
     if (raiz == NULL) {
         printf("\nNenhum aluno cadastrado.\n");
-        return;
+    } else {
+        imprimirAlunos23Rec(raiz);
     }
-    imprimirAlunos23Rec(raiz);
 }

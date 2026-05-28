@@ -3,12 +3,6 @@
 
 #define TAM_NOME 100
 
-/* ===================== VALIDACAO ===================== */
-
-#define REGRA_OK 0
-#define REGRA_BLOCO_INVALIDO 1
-#define REGRA_CARGA_INVALIDA 2
-
 /* ===================== DADOS ===================== */
 
 typedef struct {
@@ -101,6 +95,18 @@ int inserirAluno23(arv_2_3** raiz_alunos, int mat, char nome[], int cod_curso, i
 void imprimirDisciplinas23(arv_2_3* raiz);
 void imprimirCursos23(arv_2_3* raiz);
 void imprimirAlunos23(arv_2_3* raiz);
+
+void imprimirDadosCursos23(arv_2_3* raiz, int codigo_curso);
+void imprimirCursosComMesmaQtdBlocos23(arv_2_3* raiz, int blocos_ref, int* encontrou);
+void imprimirArvoreDisciplinas23(arv_2_3* raiz_cursos, int codigo_curso);
+void imprimirDadosDisciplina23(arv_2_3* raiz_cursos, int codigo_curso, int codigo_disciplina);
+void imprimirDisciplinasPorBlocoRec23(arv_2_3* raiz_disc, int bloco_ref, int* encontrou);
+void imprimirDisciplinasPorBloco23(arv_2_3* raiz_cursos, int codigo_curso, int bloco);
+void imprimirDisciplinasPorCHRec23(arv_2_3* raiz_disc, int ch_ref, int* encontrou);
+void imprimirDisciplinasPorCargaHoraria23(arv_2_3* raiz_cursos, int codigo_curso, int ch_ref);
+
+curso* obterCursoNo23(arv_2_3* no, int codigo_curso);
+disciplina* obterDisciplinaNo23(arv_2_3* no, int codigo_disciplina);
 
 void listarAlunosPorCurso23(arv_2_3* raiz, int cod_curso);
 void listarAlunosPorCursoEAno23(arv_2_3* raiz, int cod_curso, int ano);
