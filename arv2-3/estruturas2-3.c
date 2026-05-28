@@ -706,3 +706,215 @@ void imprimirAlunos23(arv_2_3* raiz) {
         imprimirAlunos23Rec(raiz);
     }
 }
+
+/*Funções de remoção*/
+/* ============================================================
+   FUNÇÕES DE REMOÇÃO - ÁRVORE 2-3 (Refatoradas - Single Return)
+   ============================================================ */
+
+/* Função auxiliar para pegar a maior informação da subárvore esquerda/central (Predecessor) */
+info_com_tipo obterPredecessor23(arv_2_3 *no) {
+    info_com_tipo predecessor;
+
+    while (!ehFolha23(no)) {
+        if (no->n_infos == 2) {
+            no = no->dir;
+        } else {
+            no = no->cen;
+        }
+    }
+
+    if (no->n_infos == 2) {
+        predecessor = no->info[1];
+    } else {
+        predecessor = no->info[0];
+    }
+
+    return predecessor;
+}
+
+/* Função recursiva de remoção com apenas um return. 
+ * Retorna 1 se o nó atual sofreu underflow, 0 caso contrário.
+ */
+int remover23Recursivo(arv_2_3 **raiz, int chave) {
+    int underflow = 0; // Ponto único de retorno, assume 0 por padrão
+
+    if (*raiz != NULL) {
+        int chave0 = obterChave23((*raiz)->info[0]);
+        
+        // CASO 1: O elemento está no Info[0]
+        if (chave == chave0) {
+            if (ehFolha23(*raiz)) {
+                if ((*raiz)->n_infos == 2) {
+                    (*raiz)->info[0] = (*raiz)->info[1];
+                    (*raiz)->n_infos = 1;
+                } else {
+                    (*raiz)->n_infos = 0;
+                    underflow = 1; 
+                }
+            } else {
+                info_com_tipo substituto = obterPredecessor23((*raiz)->esq);
+                (*raiz)->info[0] = substituto;
+                underflow = remover23Recursivo(&((*raiz)->esq), obterChave23(substituto));
+            }
+        } 
+        // CASO 2: O elemento está no Info[1]
+        else if ((*raiz)->n_infos == 2 && chave == obterChave23((*raiz)->info[1])) {
+            if (ehFolha23(*raiz)) {
+                (*raiz)->n_infos = 1;
+            } else {
+                info_com_tipo substituto = obterPredecessor23((*raiz)->cen);
+                (*raiz)->info[1] = substituto;
+                underflow = remover23Recursivo(&((*raiz)->cen), obterChave23(substituto));
+            }
+        } 
+        // CASO 3: O elemento não está neste nó. Precisamos descer na árvore.
+        else {
+            if (chave < chave0) {
+                underflow = remover23Recursivo(&((*raiz)->esq), chave);
+            } else if ((*raiz)->n_infos == 1 || chave < obterChave23((*raiz)->info[1])) {
+                underflow = remover23Recursivo(&((*raiz)->cen), chave);
+            } else {
+                underflow = remover23Recursivo(&((*raiz)->dir), chave);
+            }
+        }
+
+        // ==========================================
+        // TRATAMENTO DE UNDERFLOW NA VOLTA DA RECURSÃO
+        // ==========================================
+        if (underflow) {
+            arv_2_3 *esq = (*raiz)->esq;
+            arv_2_3 *cen = (*raiz)->cen;
+            arv_2_3 *dir = (*raiz)->dir;
+
+            // Se o underflow ocorreu no filho ESQUERDO
+            if (esq != NULL && esq->n_infos == 0) {
+                if (cen->n_infos == 2) {
+                    esq->info[0] = (*raiz)->info[0];
+                    esq->cen = cen->esq;
+                    esq->n_infos = 1;
+                    
+                    (*raiz)->info[0] = cen->info[0];
+                    
+                    cen->info[0] = cen->info[1];
+                    cen->esq = cen->cen;
+                    cen->cen = cen->dir;
+                    cen->dir = NULL;
+                    cen->n_infos = 1;
+                    underflow = 0; 
+                } else {
+                    esq->info[0] = (*raiz)->info[0];
+                    esq->info[1] = cen->info[0];
+                    esq->cen = cen->esq;
+                    esq->dir = cen->cen;
+                    esq->n_infos = 2;
+                    free(cen);
+                    
+                    if ((*raiz)->n_infos == 2) {
+                        (*raiz)->info[0] = (*raiz)->info[1];
+                        (*raiz)->cen = dir;
+                        (*raiz)->dir = NULL;
+                        (*raiz)->n_infos = 1;
+                        underflow = 0; 
+                    } else {
+                        (*raiz)->cen = NULL;
+                        (*raiz)->n_infos = 0;
+                        underflow = 1; 
+                    }
+                }
+            } 
+            // Se o underflow ocorreu no filho CENTRAL
+            else if (cen != NULL && cen->n_infos == 0) {
+                if (esq->n_infos == 2) {
+                    cen->info[0] = (*raiz)->info[0];
+                    cen->cen = cen->esq;
+                    cen->esq = esq->dir;
+                    cen->n_infos = 1;
+                    
+                    (*raiz)->info[0] = esq->info[1];
+                    
+                    esq->dir = NULL;
+                    esq->n_infos = 1;
+                    underflow = 0;
+                } else if (dir != NULL && dir->n_infos == 2) {
+                    cen->info[0] = (*raiz)->info[1];
+                    cen->esq = cen->cen;
+                    cen->cen = dir->esq;
+                    cen->n_infos = 1;
+                    
+                    (*raiz)->info[1] = dir->info[0];
+                    
+                    dir->info[0] = dir->info[1];
+                    dir->esq = dir->cen;
+                    dir->cen = dir->dir;
+                    dir->dir = NULL;
+                    dir->n_infos = 1;
+                    underflow = 0;
+                } else {
+                    esq->info[1] = (*raiz)->info[0];
+                    esq->dir = cen->cen;
+                    esq->n_infos = 2;
+                    free(cen);
+                    
+                    if ((*raiz)->n_infos == 2) {
+                        (*raiz)->info[0] = (*raiz)->info[1];
+                        (*raiz)->cen = dir;
+                        (*raiz)->dir = NULL;
+                        (*raiz)->n_infos = 1;
+                        underflow = 0;
+                    } else {
+                        (*raiz)->cen = NULL;
+                        (*raiz)->n_infos = 0;
+                        underflow = 1;
+                    }
+                }
+            }
+            // Se o underflow ocorreu no filho DIREITO
+            else if (dir != NULL && dir->n_infos == 0) {
+                if (cen->n_infos == 2) {
+                    dir->info[0] = (*raiz)->info[1];
+                    dir->cen = dir->esq;
+                    dir->esq = cen->dir;
+                    dir->n_infos = 1;
+                    
+                    (*raiz)->info[1] = cen->info[1];
+                    
+                    cen->dir = NULL;
+                    cen->n_infos = 1;
+                    underflow = 0;
+                } else {
+                    cen->info[1] = (*raiz)->info[1];
+                    cen->dir = dir->cen;
+                    cen->n_infos = 2;
+                    free(dir);
+                    
+                    (*raiz)->dir = NULL;
+                    (*raiz)->n_infos = 1;
+                    underflow = 0; 
+                }
+            }
+        }
+    }
+
+    return underflow;
+}
+
+/* Interface pública para remoção genérica com único return */
+int removerNo23(arv_2_3 **raiz, int chave) {
+    int sucesso = 0; // Ponto único de retorno
+
+    if (*raiz != NULL) {
+        int underflow = remover23Recursivo(raiz, chave);
+
+        // Se o underflow propagou até a raiz principal, a altura da árvore diminui
+        if (underflow) {
+            arv_2_3 *raiz_antiga = *raiz;
+            *raiz = raiz_antiga->esq; 
+            free(raiz_antiga);
+        }
+        
+        sucesso = 1;  // Remoção processada
+    }
+
+    return sucesso;
+}

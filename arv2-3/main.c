@@ -35,6 +35,8 @@ int main() {
         printf("  [12] Listar Alunos de um Curso\n");
         printf("  [13] Listar Alunos por Curso e Ano\n");
         printf("  [14] Contar Alunos em um Curso\n");
+        printf("  [15] Excluir Disciplina de um Curso\n");
+        printf("  [16] Excluir Curso\n");
         printf("  [0] Sair do Sistema\n");
         printf("-----------------------------------------------------------\n");
         printf("  Selecione uma opcao: ");
@@ -303,6 +305,35 @@ int main() {
                 } else {
                     res = contarAlunosNoCurso23(raiz_alunos, cod_curso);
                     printf("\nTotal de alunos no curso %d: %d\n", cod_curso, res);
+                }
+                break;
+
+            case 15: 
+                printf("\n>> EXCLUIR DISCIPLINA DE UM CURSO (2-3) <<\n");
+                printf("Codigo do Curso: ");
+                scanf("%d", &cod_curso);
+                
+                printf("Codigo da Disciplina a ser excluida: ");
+                scanf("%d", &cod_d);
+                
+                // Chama a função que criamos. Ela já trata os erros internamente.
+                res = excluirDisciplinaDoCurso23(raiz_cursos, cod_curso, cod_d);
+                
+                if (res == 1) {
+                    printf("\n[OK] Disciplina %d excluida do curso %d com sucesso!\n", cod_d, cod_curso);
+                }
+                break;
+
+            case 16: 
+                printf("\n>> EXCLUIR CURSO (2-3) <<\n");
+                printf("Codigo do Curso a ser excluido: ");
+                scanf("%d", &cod_curso);
+                
+                // Chama a função usando o nome que demos para respeitar a regra do documento
+                res = excluirCursoVazio23(&raiz_cursos, cod_curso);
+                
+                if (res == 1) {
+                    printf("\n[OK] Curso %d excluido com sucesso!\n", cod_curso);
                 }
                 break;
 
