@@ -310,17 +310,43 @@ int main() {
 
             case 15: 
                 printf("\n>> EXCLUIR DISCIPLINA DE UM CURSO (2-3) <<\n");
-                printf("Codigo do Curso: ");
-                scanf("%d", &cod_curso);
                 
-                printf("Codigo da Disciplina a ser excluida: ");
-                scanf("%d", &cod_d);
-                
-                // Chama a função que criamos. Ela já trata os erros internamente.
-                res = excluirDisciplinaDoCurso23(raiz_cursos, cod_curso, cod_d);
-                
-                if (res == 1) {
-                    printf("\n[OK] Disciplina %d excluida do curso %d com sucesso!\n", cod_d, cod_curso);
+                // 1. Verifica se existe algum curso ANTES de pedir o código do curso
+                if (raiz_cursos == NULL) {
+                    printf("\n[ERRO] Nenhum curso cadastrado no sistema.\n");
+                } else {
+                    printf("Codigo do Curso: ");
+                    scanf("%d", &cod_curso);
+                    
+                    arv_2_3* no_curso = buscar23(raiz_cursos, cod_curso);
+                    
+                    // 2. Verifica se o curso existe
+                    if (no_curso == NULL) {
+                        printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                    } else {
+                        curso* curso_alvo = obterCursoNo23(no_curso, cod_curso);
+
+                        // 3. Verifica se o curso tem disciplinas ANTES de pedir o código da disciplina
+                        if (curso_alvo->raiz_disciplinas == NULL) {
+                            printf("\n[ERRO] O curso %d nao possui disciplinas cadastradas.\n", cod_curso);
+                        } else {
+                            // 4. Agora sim, com tudo validado, pedimos a disciplina!
+                            printf("Codigo da Disciplina a ser excluida: ");
+                            scanf("%d", &cod_d);
+
+                            if (buscar23(curso_alvo->raiz_disciplinas, cod_d) == NULL) {
+                                printf("\n[ERRO] Disciplina %d nao encontrada no curso %d.\n", cod_d, cod_curso);
+                            } else {
+                                res = removerNo23(&(curso_alvo->raiz_disciplinas), cod_d);
+                                
+                                if (res == 1) {
+                                    printf("\n[OK] Disciplina %d excluida do curso %d com sucesso!\n", cod_d, cod_curso);
+                                } else {
+                                    printf("\n[ERRO] Falha ao excluir disciplina %d.\n", cod_d);
+                                }
+                            }
+                        }
+                    }
                 }
                 break;
 
@@ -328,15 +354,33 @@ int main() {
                 printf("\n>> EXCLUIR CURSO (2-3) <<\n");
                 printf("Codigo do Curso a ser excluido: ");
                 scanf("%d", &cod_curso);
-                
-                // Chama a função usando o nome que demos para respeitar a regra do documento
-                res = excluirCursoVazio23(&raiz_cursos, cod_curso);
-                
-                if (res == 1) {
-                    printf("\n[OK] Curso %d excluido com sucesso!\n", cod_curso);
+
+                if (raiz_cursos == NULL) {
+                    printf("\n[ERRO] Nenhum curso cadastrado.\n");
+                } else {
+                    arv_2_3* no_curso = buscar23(raiz_cursos, cod_curso);
+                    
+                    // CORREÇÃO: Verificar se no_curso é NULL antes de extrair o curso
+                    if (no_curso == NULL) {
+                        printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                    } else {
+                        curso* curso_alvo = obterCursoNo23(no_curso, cod_curso);
+
+                        if (curso_alvo->raiz_disciplinas != NULL) {
+                            printf("\n[ERRO] O curso %d possui disciplinas cadastradas. Remova-as primeiro.\n", cod_curso);
+                        } else {
+                            res = removerNo23(&raiz_cursos, cod_curso);
+                            
+                            if (res == 1) {
+                                printf("\n[OK] Curso %d excluido com sucesso!\n", cod_curso);
+                                // free(curso_alvo); // <-- Liberação da struct curso da memória para evitar leak
+                            } else {
+                                printf("\n[ERRO] Falha ao excluir curso %d.\n", cod_curso);
+                            }
+                        }
+                    }
                 }
                 break;
-
             case 0:
                 printf("\nFinalizando sessao da Arvore 2-3. Ate logo!\n");
                 break;

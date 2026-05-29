@@ -394,82 +394,103 @@ disciplina* obterDisciplinaNo23(arv_2_3* no, int codigo_disciplina) {
    FUNÇÕES DE IMPRESSÃO ESPECÍFICAS - ÁRVORE 2-3
    ============================================================ */
 
-// 1. Especializada em Disciplinas (Nível Folha da Sub-árvore)
-void imprimirDisciplinas23(arv_2_3* raiz) {
+// Imprime as disciplinas mostrando a estrutura da sub-árvore (Níveis)
+void imprimirDisciplinas23Rec(arv_2_3* raiz, int nivel) {
     if (raiz != NULL) {
-        // Visita o filho esquerdo
-        imprimirDisciplinas23(raiz->esq);
+        // Visita filho esquerdo
+        imprimirDisciplinas23Rec(raiz->esq, nivel + 1);
         
-        // Imprime a primeira disciplina (sempre existe se o nó não for nulo)
-        printf("\n  -> [DISCIPLINA] ID: %d | Nome: %s | Bloco: %d | Carga: %dh", 
-                raiz->info[0].dado.disciplina.codigo_disciplina, 
-                raiz->info[0].dado.disciplina.nome_disciplina, 
-                raiz->info[0].dado.disciplina.bloco_disciplina, 
-                raiz->info[0].dado.disciplina.carga_horaria);
+        char tab[50] = "";
+        for (int i = 0; i < nivel; i++) {
+            strcat(tab, "            "); // 12 espaços por nível para alinhar bem
+        }
         
-        // Visita o filho central
-        imprimirDisciplinas23(raiz->cen);
+        disciplina* d0 = &(raiz->info[0].dado.disciplina);
+        printf("\n%s-> [NIVEL %d] [DISCIPLINA] ID: %d | Nome: %s", 
+                tab, nivel, d0->codigo_disciplina, d0->nome_disciplina);
+                
+        // Visita filho central
+        imprimirDisciplinas23Rec(raiz->cen, nivel + 1);
         
-        // Se o nó estiver cheio, imprime a segunda disciplina e visita o filho direito
         if (raiz->n_infos == 2) {
-            printf("\n  -> [DISCIPLINA] ID: %d | Nome: %s | Bloco: %d | Carga: %dh", 
-                    raiz->info[1].dado.disciplina.codigo_disciplina, 
-                    raiz->info[1].dado.disciplina.nome_disciplina, 
-                    raiz->info[1].dado.disciplina.bloco_disciplina, 
-                    raiz->info[1].dado.disciplina.carga_horaria);
-            imprimirDisciplinas23(raiz->dir);
+            disciplina* d1 = &(raiz->info[1].dado.disciplina);
+            printf("\n%s-> [NIVEL %d] [DISCIPLINA] ID: %d | Nome: %s", 
+                    tab, nivel, d1->codigo_disciplina, d1->nome_disciplina);
+                    
+            // Visita filho direito
+            imprimirDisciplinas23Rec(raiz->dir, nivel + 1);
         }
     }
 }
 
-// 2. Especializada em Cursos (Imprime o curso e varre sua árvore interna de disciplinas)
-void imprimirCursos23Rec(arv_2_3* raiz) {
+void imprimirDisciplinas23(arv_2_3* raiz) {
+    if (raiz == NULL) {
+        printf("\n   (Nenhuma disciplina cadastrada)\n");
+    } else {
+        imprimirDisciplinas23Rec(raiz, 0); // Raiz da sub-árvore de disciplinas é nível 0
+    }
+}
+
+// 2. Especializada em Cursos (Adaptada para mostrar Nível e Estrutura)
+void imprimirCursos23Rec(arv_2_3* raiz, int nivel) {
     if (raiz != NULL) {
-        // Visita o filho esquerdo
-        imprimirCursos23Rec(raiz->esq);
+        // Visita o filho esquerdo descendo um nível
+        imprimirCursos23Rec(raiz->esq, nivel + 1);
+
+        // --- Gera o recuo visual baseado na profundidade da árvore ---
+        char tab[50] = "";
+        for (int i = 0; i < nivel; i++) {
+            strcat(tab, "        "); // 8 espaços por nível
+        }
 
         // --- PROCESSA INFO[0] ---
         curso* curso0 = &(raiz->info[0].dado.curso);
-        printf("\n[CURSO] ID: %d | Nome: %s | Blocos: %d\n", 
-                curso0->codigo_curso, curso0->nome_curso, curso0->qtd_blocos_curso);
-        printf("  -------------------------------------------");
+        printf("\n%s-> [NIVEL %d] [CURSO] ID: %d | Nome: %s | Blocos: %d\n", 
+                tab, nivel, curso0->codigo_curso, curso0->nome_curso, curso0->qtd_blocos_curso);
+        printf("%s   -------------------------------------------", tab);
+        
         if (curso0->raiz_disciplinas == NULL) {
-            printf("\n  (Nenhuma disciplina cadastrada neste curso)\n");
+            printf("\n%s   (Nenhuma disciplina cadastrada)\n", tab);
         } else {
-            imprimirDisciplinas23(curso0->raiz_disciplinas);
+            imprimirDisciplinas23(curso0->raiz_disciplinas); // Mantém sua chamada original
+            printf("\n");
         }
-        printf("\n  -------------------------------------------\n");
+        printf("%s   -------------------------------------------\n", tab);
 
-        // Visita o filho central
-        imprimirCursos23Rec(raiz->cen);
+        // Visita o filho central descendo um nível
+        imprimirCursos23Rec(raiz->cen, nivel + 1);
 
         // --- PROCESSA INFO[1] (Se o nó possuir duas informações) ---
         if (raiz->n_infos == 2) {
             curso* curso1 = &(raiz->info[1].dado.curso);
-            printf("\n[CURSO] ID: %d | Nome: %s | Blocos: %d\n", 
-                    curso1->codigo_curso, curso1->nome_curso, curso1->qtd_blocos_curso);
-            printf("  -------------------------------------------");
+            printf("\n%s-> [NIVEL %d] [CURSO] ID: %d | Nome: %s | Blocos: %d\n", 
+                    tab, nivel, curso1->codigo_curso, curso1->nome_curso, curso1->qtd_blocos_curso);
+            printf("%s   -------------------------------------------", tab);
+            
             if (curso1->raiz_disciplinas == NULL) {
-                printf("\n  (Nenhuma disciplina cadastrada neste curso)\n");
+                printf("\n%s   (Nenhuma disciplina cadastrada)\n", tab);
             } else {
                 imprimirDisciplinas23(curso1->raiz_disciplinas);
+                printf("\n");
             }
-            printf("\n  -------------------------------------------\n");
+            printf("%s   -------------------------------------------\n", tab);
 
-            // Visita o filho direito
-            imprimirCursos23Rec(raiz->dir);
+            // Visita o filho direito descendo um nível
+            imprimirCursos23Rec(raiz->dir, nivel + 1);
         }
     }
 }
 
+// Interface principal adaptada
 void imprimirCursos23(arv_2_3* raiz) {
     if (raiz == NULL) {
         printf("\nNenhum curso cadastrado.\n");
     } else {
-        imprimirCursos23Rec(raiz);
+        printf("\n================ ESTRUTURA DA ARVORE ================\n");
+        imprimirCursos23Rec(raiz, 0); // A raiz principal começa no nível 0
+        printf("=====================================================\n");
     }
 }
-
 
 void imprimirDadosCursos23(arv_2_3* raiz, int codigo_curso) {
     arv_2_3* no = buscar23(raiz, codigo_curso);
@@ -733,165 +754,390 @@ info_com_tipo obterPredecessor23(arv_2_3 *no) {
     return predecessor;
 }
 
-/* Função recursiva de remoção com apenas um return. 
- * Retorna 1 se o nó atual sofreu underflow, 0 caso contrário.
- */
-int remover23Recursivo(arv_2_3 **raiz, int chave) {
-    int underflow = 0; // Ponto único de retorno, assume 0 por padrão
+// =======================================================
+// AJUSTE DO PAI APÓS MERGE
+// =======================================================
 
-    if (*raiz != NULL) {
-        int chave0 = obterChave23((*raiz)->info[0]);
-        
-        // CASO 1: O elemento está no Info[0]
-        if (chave == chave0) {
-            if (ehFolha23(*raiz)) {
-                if ((*raiz)->n_infos == 2) {
-                    (*raiz)->info[0] = (*raiz)->info[1];
-                    (*raiz)->n_infos = 1;
-                } else {
-                    (*raiz)->n_infos = 0;
-                    underflow = 1; 
-                }
-            } else {
-                info_com_tipo substituto = obterPredecessor23((*raiz)->esq);
-                (*raiz)->info[0] = substituto;
-                underflow = remover23Recursivo(&((*raiz)->esq), obterChave23(substituto));
-            }
-        } 
-        // CASO 2: O elemento está no Info[1]
-        else if ((*raiz)->n_infos == 2 && chave == obterChave23((*raiz)->info[1])) {
-            if (ehFolha23(*raiz)) {
-                (*raiz)->n_infos = 1;
-            } else {
-                info_com_tipo substituto = obterPredecessor23((*raiz)->cen);
-                (*raiz)->info[1] = substituto;
-                underflow = remover23Recursivo(&((*raiz)->cen), obterChave23(substituto));
-            }
-        } 
-        // CASO 3: O elemento não está neste nó. Precisamos descer na árvore.
+void ajustarPaiAposMerge(arv_2_3 *pai) {
+
+    if (pai != NULL){
+
+        if (pai->n_infos == 2) {
+
+            pai->info[0] = pai->info[1];
+
+            pai->cen = pai->dir;
+
+            pai->dir = NULL;
+
+            pai->n_infos = 1;
+        }
         else {
-            if (chave < chave0) {
-                underflow = remover23Recursivo(&((*raiz)->esq), chave);
-            } else if ((*raiz)->n_infos == 1 || chave < obterChave23((*raiz)->info[1])) {
-                underflow = remover23Recursivo(&((*raiz)->cen), chave);
-            } else {
-                underflow = remover23Recursivo(&((*raiz)->dir), chave);
+
+            pai->cen = NULL;
+
+            pai->n_infos = 0;
+        }
+    }
+}
+
+
+// =======================================================
+// REBALANCEAMENTO ESQUERDO
+// =======================================================
+
+int rebalancearEsq(arv_2_3 *pai) {
+
+    int houveUnderflowPai = 0;
+
+    arv_2_3 *esq = pai->esq;
+    arv_2_3 *cen = pai->cen;
+
+    // ==========================================
+    // REDISTRIBUIÇÃO
+    // ==========================================
+
+    if (cen != NULL && cen->n_infos == 2) {
+
+        esq->info[0] = pai->info[0];
+
+        esq->cen = cen->esq;
+
+        esq->n_infos = 1;
+
+        pai->info[0] = cen->info[0];
+
+        cen->info[0] = cen->info[1];
+
+        cen->esq = cen->cen;
+        cen->cen = cen->dir;
+        cen->dir = NULL;
+
+        cen->n_infos = 1;
+    }
+
+    // ==========================================
+    // MERGE
+    // ==========================================
+
+    else {
+
+        esq->info[0] = pai->info[0];
+        esq->info[1] = cen->info[0];
+
+        // preserva esq->esq
+        esq->cen = cen->esq;
+        esq->dir = cen->cen;
+
+        esq->n_infos = 2;
+
+        free(cen);
+
+        pai->cen = NULL;
+
+        ajustarPaiAposMerge(pai);
+
+        houveUnderflowPai = (pai->n_infos == 0);
+    }
+
+    return houveUnderflowPai;
+}
+
+
+// =======================================================
+// REBALANCEAMENTO CENTRAL
+// =======================================================
+
+int rebalancearCen(arv_2_3 *pai) {
+
+    int houveUnderflowPai = 0;
+
+    arv_2_3 *esq = pai->esq;
+    arv_2_3 *cen = pai->cen;
+    arv_2_3 *dir = pai->dir;
+
+    // ==========================================
+    // REDISTRIBUIÇÃO PELO ESQUERDO
+    // ==========================================
+
+    if (esq != NULL && esq->n_infos == 2) {
+
+        cen->info[0] = pai->info[0];
+
+        cen->cen = cen->esq;
+
+        cen->esq = esq->dir;
+
+        cen->n_infos = 1;
+
+        pai->info[0] = esq->info[1];
+
+        esq->dir = NULL;
+
+        esq->n_infos = 1;
+    }
+
+    // ==========================================
+    // REDISTRIBUIÇÃO PELO DIREITO
+    // ==========================================
+
+    else if (dir != NULL && dir->n_infos == 2) {
+
+        cen->info[0] = pai->info[1];
+
+        cen->cen = dir->esq;
+
+        cen->n_infos = 1;
+
+        pai->info[1] = dir->info[0];
+
+        dir->info[0] = dir->info[1];
+
+        dir->esq = dir->cen;
+        dir->cen = dir->dir;
+        dir->dir = NULL;
+
+        dir->n_infos = 1;
+    }
+
+    // ==========================================
+    // MERGE
+    // ==========================================
+
+    else {
+
+        esq->info[1] = pai->info[0];
+
+        // preserva:
+        // esq->esq
+        // esq->cen
+
+        esq->dir = cen->esq;
+
+        esq->n_infos = 2;
+
+        free(cen);
+
+        pai->cen = NULL;
+
+        ajustarPaiAposMerge(pai);
+
+        houveUnderflowPai = (pai->n_infos == 0);
+    }
+
+    return houveUnderflowPai;
+}
+
+
+// =======================================================
+// REBALANCEAMENTO DIREITO
+// =======================================================
+
+int rebalancearDir(arv_2_3 *pai) {
+
+    arv_2_3 *cen = pai->cen;
+    arv_2_3 *dir = pai->dir;
+
+    // ==========================================
+    // REDISTRIBUIÇÃO
+    // ==========================================
+
+    if (cen != NULL && cen->n_infos == 2) {
+
+        dir->info[0] = pai->info[1];
+
+        dir->cen = dir->esq;
+
+        dir->esq = cen->dir;
+
+        dir->n_infos = 1;
+
+        pai->info[1] = cen->info[1];
+
+        cen->dir = NULL;
+
+        cen->n_infos = 1;
+    }
+
+    // ==========================================
+    // MERGE
+    // ==========================================
+
+    else {
+
+        cen->info[1] = pai->info[1];
+
+        // preserva:
+        // cen->esq
+        // cen->cen
+
+        cen->dir = dir->esq;
+
+        cen->n_infos = 2;
+
+        free(dir);
+
+        pai->dir = NULL;
+
+        // underflow à direita nunca propaga
+        pai->n_infos = 1;
+    }
+
+    return 0;
+}
+
+
+// =======================================================
+// REMOÇÃO RECURSIVA
+// =======================================================
+
+int remover23Recursivo(arv_2_3 **raiz, int chave) {
+
+    int underflow = 0;
+
+    if (raiz != NULL && *raiz != NULL) {
+
+        arv_2_3 *no = *raiz;
+
+        int chave0 = obterChave23(no->info[0]);
+
+        int chave1 = -1;
+
+        if (no->n_infos == 2)
+            chave1 = obterChave23(no->info[1]);
+
+        // ==========================================
+        // REMOVE INFO[0]
+        // ==========================================
+
+        if (chave == chave0) {
+
+            if (ehFolha23(no)) {
+
+                if (no->n_infos == 2) {
+
+                    no->info[0] = no->info[1];
+
+                    no->n_infos = 1;
+                }
+                else {
+
+                    no->n_infos = 0;
+
+                    underflow = 1;
+                }
+            }
+            else {
+
+                info_com_tipo pred =
+                    obterPredecessor23(no->esq);
+
+                no->info[0] = pred;
+
+                underflow =
+                    remover23Recursivo(
+                        &(no->esq),
+                        obterChave23(pred)
+                    );
             }
         }
 
         // ==========================================
-        // TRATAMENTO DE UNDERFLOW NA VOLTA DA RECURSÃO
+        // REMOVE INFO[1]
         // ==========================================
-        if (underflow) {
-            arv_2_3 *esq = (*raiz)->esq;
-            arv_2_3 *cen = (*raiz)->cen;
-            arv_2_3 *dir = (*raiz)->dir;
 
-            // Se o underflow ocorreu no filho ESQUERDO
-            if (esq != NULL && esq->n_infos == 0) {
-                if (cen->n_infos == 2) {
-                    esq->info[0] = (*raiz)->info[0];
-                    esq->cen = cen->esq;
-                    esq->n_infos = 1;
-                    
-                    (*raiz)->info[0] = cen->info[0];
-                    
-                    cen->info[0] = cen->info[1];
-                    cen->esq = cen->cen;
-                    cen->cen = cen->dir;
-                    cen->dir = NULL;
-                    cen->n_infos = 1;
-                    underflow = 0; 
-                } else {
-                    esq->info[0] = (*raiz)->info[0];
-                    esq->info[1] = cen->info[0];
-                    esq->cen = cen->esq;
-                    esq->dir = cen->cen;
-                    esq->n_infos = 2;
-                    free(cen);
-                    
-                    if ((*raiz)->n_infos == 2) {
-                        (*raiz)->info[0] = (*raiz)->info[1];
-                        (*raiz)->cen = dir;
-                        (*raiz)->dir = NULL;
-                        (*raiz)->n_infos = 1;
-                        underflow = 0; 
-                    } else {
-                        (*raiz)->cen = NULL;
-                        (*raiz)->n_infos = 0;
-                        underflow = 1; 
-                    }
-                }
-            } 
-            // Se o underflow ocorreu no filho CENTRAL
-            else if (cen != NULL && cen->n_infos == 0) {
-                if (esq->n_infos == 2) {
-                    cen->info[0] = (*raiz)->info[0];
-                    cen->cen = cen->esq;
-                    cen->esq = esq->dir;
-                    cen->n_infos = 1;
-                    
-                    (*raiz)->info[0] = esq->info[1];
-                    
-                    esq->dir = NULL;
-                    esq->n_infos = 1;
-                    underflow = 0;
-                } else if (dir != NULL && dir->n_infos == 2) {
-                    cen->info[0] = (*raiz)->info[1];
-                    cen->esq = cen->cen;
-                    cen->cen = dir->esq;
-                    cen->n_infos = 1;
-                    
-                    (*raiz)->info[1] = dir->info[0];
-                    
-                    dir->info[0] = dir->info[1];
-                    dir->esq = dir->cen;
-                    dir->cen = dir->dir;
-                    dir->dir = NULL;
-                    dir->n_infos = 1;
-                    underflow = 0;
-                } else {
-                    esq->info[1] = (*raiz)->info[0];
-                    esq->dir = cen->cen;
-                    esq->n_infos = 2;
-                    free(cen);
-                    
-                    if ((*raiz)->n_infos == 2) {
-                        (*raiz)->info[0] = (*raiz)->info[1];
-                        (*raiz)->cen = dir;
-                        (*raiz)->dir = NULL;
-                        (*raiz)->n_infos = 1;
-                        underflow = 0;
-                    } else {
-                        (*raiz)->cen = NULL;
-                        (*raiz)->n_infos = 0;
-                        underflow = 1;
-                    }
-                }
+        else if (
+            no->n_infos == 2 &&
+            chave == chave1
+        ) {
+
+            if (ehFolha23(no)) {
+
+                no->n_infos = 1;
             }
-            // Se o underflow ocorreu no filho DIREITO
-            else if (dir != NULL && dir->n_infos == 0) {
-                if (cen->n_infos == 2) {
-                    dir->info[0] = (*raiz)->info[1];
-                    dir->cen = dir->esq;
-                    dir->esq = cen->dir;
-                    dir->n_infos = 1;
-                    
-                    (*raiz)->info[1] = cen->info[1];
-                    
-                    cen->dir = NULL;
-                    cen->n_infos = 1;
-                    underflow = 0;
-                } else {
-                    cen->info[1] = (*raiz)->info[1];
-                    cen->dir = dir->cen;
-                    cen->n_infos = 2;
-                    free(dir);
-                    
-                    (*raiz)->dir = NULL;
-                    (*raiz)->n_infos = 1;
-                    underflow = 0; 
-                }
+            else {
+
+                info_com_tipo pred =
+                    obterPredecessor23(no->cen);
+
+                no->info[1] = pred;
+
+                underflow =
+                    remover23Recursivo(
+                        &(no->cen),
+                        obterChave23(pred)
+                    );
+            }
+        }
+
+        // ==========================================
+        // DESCIDA
+        // ==========================================
+
+        else {
+
+            if (chave < chave0) {
+
+                underflow =
+                    remover23Recursivo(
+                        &(no->esq),
+                        chave
+                    );
+            }
+
+            else if (
+                no->n_infos == 1 ||
+                chave < chave1
+            ) {
+
+                underflow =
+                    remover23Recursivo(
+                        &(no->cen),
+                        chave
+                    );
+            }
+
+            else {
+
+                underflow =
+                    remover23Recursivo(
+                        &(no->dir),
+                        chave
+                    );
+            }
+        }
+
+        // ==========================================
+        // REBALANCEAMENTO
+        // ==========================================
+
+        if (underflow) {
+
+            if (
+                no->esq != NULL &&
+                no->esq->n_infos == 0
+            ) {
+
+                underflow =
+                    rebalancearEsq(no);
+            }
+
+            else if (
+                no->cen != NULL &&
+                no->cen->n_infos == 0
+            ) {
+
+                underflow =
+                    rebalancearCen(no);
+            }
+
+            else if (
+                no->dir != NULL &&
+                no->dir->n_infos == 0
+            ) {
+
+                underflow =
+                    rebalancearDir(no);
             }
         }
     }
@@ -899,21 +1145,34 @@ int remover23Recursivo(arv_2_3 **raiz, int chave) {
     return underflow;
 }
 
-/* Interface pública para remoção genérica com único return */
+
+// =======================================================
+// INTERFACE PÚBLICA
+// =======================================================
+
 int removerNo23(arv_2_3 **raiz, int chave) {
-    int sucesso = 0; // Ponto único de retorno
 
-    if (*raiz != NULL) {
-        int underflow = remover23Recursivo(raiz, chave);
+    int sucesso = 0;
 
-        // Se o underflow propagou até a raiz principal, a altura da árvore diminui
+    if (raiz != NULL && *raiz != NULL) {
+
+        int underflow =
+            remover23Recursivo(
+                raiz,
+                chave
+            );
+
+        // redução da altura da árvore
         if (underflow) {
-            arv_2_3 *raiz_antiga = *raiz;
-            *raiz = raiz_antiga->esq; 
-            free(raiz_antiga);
+
+            arv_2_3 *raizAntiga = *raiz;
+
+            *raiz = raizAntiga->esq;
+
+            free(raizAntiga);
         }
-        
-        sucesso = 1;  // Remoção processada
+
+        sucesso = 1;
     }
 
     return sucesso;
