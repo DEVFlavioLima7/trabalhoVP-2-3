@@ -125,8 +125,8 @@ void executar_experimento_30_cursos_23(arv_2_3* raiz_cursos) {
    MAIN PRINCIPAL
    ========================================================================= */
 int main() {
-    Arv23* raiz_cursos = NULL;
-    Arv23* raiz_alunos = NULL;
+    arv_2_3* raiz_cursos = NULL;
+    arv_2_3* raiz_alunos = NULL;
     
     int opcao, res;
     int cod, blocos, semanas, cod_d, bloco_d, carga;
@@ -169,20 +169,19 @@ int main() {
 
                 if (buscar23(raiz_cursos, cod) != NULL) {
                     printf("\n[ERRO] O curso %d ja esta cadastrado!\n", cod);
-                    break;
-                }
-
-                printf("Nome do Curso: "); 
-                scanf(" %[^\n]", nome);
-                printf("Qtd. Blocos: "); 
-                scanf("%d", &blocos);
-                printf("Semanas/Semestre: "); 
-                scanf("%d", &semanas);
-                
-                if (inserirCurso23(&raiz_cursos, cod, nome, blocos, semanas))
-                    printf("\n[OK] Curso registrado com sucesso na Arvore 2-3!\n");
-                else
-                    printf("\n[ERRO] Falha na alocacao de memoria.\n");
+                }else{
+                    printf("Nome do Curso: "); 
+                    scanf(" %[^\n]", nome);
+                    printf("Qtd. Blocos: "); 
+                    scanf("%d", &blocos);
+                    printf("Semanas/Semestre: "); 
+                    scanf("%d", &semanas);
+                    
+                    if (inserirCurso23(&raiz_cursos, cod, nome, blocos, semanas))
+                        printf("\n[OK] Curso registrado com sucesso na Arvore 2-3!\n");
+                    else
+                        printf("\n[ERRO] Falha na alocacao de memoria.\n");
+                }                    
                 break;
 
             case 2:
@@ -190,10 +189,12 @@ int main() {
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
 
-                Arv23* curso_ref = buscar23(raiz_cursos, cod_curso);
+                arv_2_3* curso_ref = buscar23(raiz_cursos, cod_curso);
+                int pode_vincular = 1;
+                
                 if (curso_ref == NULL) {
                     printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
-                    break;
+                    pode_vincular = 0;
                 }
 
                 if (pode_vincular) {
@@ -245,65 +246,42 @@ int main() {
                         }
                     }
                 }
-
-                printf("Codigo da Disciplina: "); 
-                scanf("%d", &cod_d);
-
-                if (buscar23(curso_alvo->raiz_disciplinas, cod_d) != NULL) {
-                    printf("\n[ERRO] A disciplina %d ja existe no curso %s!\n", cod_d, curso_alvo->nomecurso);
-                    break;
-                }
-
-                printf("Nome da Disciplina: "); 
-                scanf(" %[^\n]", nome);
-
-                int max_b = curso_alvo->qtd_blocoscurso;
-                do {
-                    printf("Bloco (0 a %d): ", max_b - 1);
-                    scanf("%d", &bloco_d);
-                    if(bloco_d >= max_b || bloco_d < 0) printf("[!] Bloco fora do limite do curso.\n");
-                } while (bloco_d >= max_b || bloco_d < 0);
-                
-                int sem_ref = curso_alvo->semanas_disciplina;
-                do {
-                    printf("Carga Horaria (Multiplo de %d): ", sem_ref);
-                    scanf("%d", &carga);
-                    if(carga % sem_ref != 0) printf("[!] Carga horaria deve ser multipla de %d.\n", sem_ref);
-                } while (carga % sem_ref != 0 || carga <= 0);
-
-                res = inserirDisciplinaNoCurso23(raiz_cursos, cod_curso, cod_d, nome, bloco_d, carga);
-                if (res == 1) printf("\n[OK] Disciplina cadastrada com sucesso na sub-arvore 2-3!\n");
                 break;
-
             case 3:
                 printf("\n/---------- CADASTRO DE ALUNO (2-3) ----------/\n");
                 printf("Matricula: "); 
                 scanf("%d", &cod); 
 
+                int pode_cadastrar = 1;
                 if (buscar23(raiz_alunos, cod) != NULL) {
                     printf("\n[ERRO] Matricula %d ja existe!\n", cod);
-                    break;
+                    pode_cadastrar = 0;
                 }
 
-                printf("Nome do Aluno: "); 
-                scanf(" %[^\n]", nome);
-                printf("Codigo do Curso: "); 
-                scanf("%d", &cod_curso);
+                if (pode_cadastrar) {
+                    printf("Nome do Aluno: "); 
+                    scanf(" %[^\n]", nome);
+                    printf("Codigo do Curso: "); 
+                    scanf("%d", &cod_curso);
 
-                if (buscar23(raiz_cursos, cod_curso) == NULL) {
-                    printf("\n[ERRO] Curso %d nao existe! Cadastre o curso primeiro.\n", cod_curso);
-                    break;
+                    if (buscar23(raiz_cursos, cod_curso) == NULL) {
+                        printf("\n[ERRO] Curso %d nao existe! Cadastre o curso primeiro.\n", cod_curso);
+                        pode_cadastrar = 0;
+                    }
                 }
 
-                printf("Ano de Ingresso: "); 
-                scanf("%d", &ano);
-                printf("Semestre (1 ou 2): "); 
-                scanf("%d", &sem);
+                if (pode_cadastrar) {
+                    printf("Ano de Ingresso: "); 
+                    scanf("%d", &ano);
+                    printf("Semestre (1 ou 2): "); 
+                    scanf("%d", &sem);
 
-                if (inserirAluno23(&raiz_alunos, cod, nome, cod_curso, ano, sem))
-                    printf("\n[OK] Aluno cadastrado com sucesso na Arvore 2-3!\n");
-                else
-                    printf("\n[ERRO] Falha ao cadastrar aluno.\n");
+                    if (inserirAluno23(&raiz_alunos, cod, nome, cod_curso, ano, sem))
+                        printf("\n[OK] Aluno cadastrado com sucesso na Arvore 2-3!\n");
+                    else
+                        printf("\n[ERRO] Falha ao cadastrar aluno.\n");
+                }
+
                 break;
 
             case 4: // RELATÓRIO DE CURSOS
@@ -326,24 +304,39 @@ int main() {
 
             case 6: // LISTAR ALUNOS POR CURSO
                 printf("\n>> LISTAR ALUNOS POR CURSO (2-3) <<\n");
-                printf("Codigo do Curso: "); scanf("%d", &cod_curso);
-                printf("\nAlunos do Curso %d:\n", cod_curso);
-                listarAlunosPorCurso23(raiz_alunos, cod_curso);
+                printf("Codigo do Curso: "); 
+                scanf("%d", &cod_curso);
+                if (buscar23(raiz_cursos, cod_curso) == NULL) {
+                    printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                } else {
+                    printf("\nAlunos do Curso %d:\n", cod_curso);
+                    listarAlunosPorCurso23(raiz_alunos, cod_curso);
+                }
                 break;
 
             case 7: // LISTAR ALUNOS POR CURSO E ANO
                 printf("\n>> LISTAR ALUNOS POR CURSO E ANO (2-3) <<\n");
-                printf("Codigo do Curso: "); scanf("%d", &cod_curso);
-                printf("Ano de Ingresso: "); scanf("%d", &ano);
-                printf("\nAlunos do Curso %d ingressos em %d:\n", cod_curso, ano);
-                listarAlunosPorCursoEAno23(raiz_alunos, cod_curso, ano);
+                printf("Codigo do Curso: ");
+                scanf("%d", &cod_curso);
+                if (buscar23(raiz_cursos, cod_curso) == NULL) {
+                    printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                }else{
+                    printf("Ano de Ingresso: "); 
+                    scanf("%d", &ano);
+                    printf("\nAlunos do Curso %d ingressos em %d:\n", cod_curso, ano);
+                    listarAlunosPorCursoEAno23(raiz_alunos, cod_curso, ano);
+                }   
                 break;
-
             case 8: // CONTAR ALUNOS NO CURSO
                 printf("\n>> QUANTIDADE DE ALUNOS NO CURSO (2-3) <<\n");
-                printf("Codigo do Curso: "); scanf("%d", &cod_curso);
-                res = contarAlunosNoCurso23(raiz_alunos, cod_curso);
-                printf("\nTotal de alunos no curso %d: %d\n", cod_curso, res);
+                printf("Codigo do Curso: "); 
+                scanf("%d", &cod_curso);
+                if (buscar23(raiz_cursos, cod_curso) == NULL) {
+                    printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                } else {
+                    res = contarAlunosNoCurso23(raiz_alunos, cod_curso);
+                    printf("\nTotal de alunos no curso %d: %d\n", cod_curso, res);
+                }
                 break;
 
             case 15: 

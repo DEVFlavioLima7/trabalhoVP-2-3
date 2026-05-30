@@ -122,8 +122,8 @@ void executar_experimento_30_cursos(rb_node* raiz_cursos) {
    MAIN PRINCIPAL
    ========================================================================= */
 int main() {
-    RBNode* raiz_cursos = NULL;
-    RBNode* raiz_alunos = NULL;
+    rb_node* raiz_cursos = NULL;
+    rb_node* raiz_alunos = NULL;
     
     int opcao, res;
     int cod, blocos, semanas, cod_d, bloco_d, carga;
@@ -163,22 +163,24 @@ int main() {
                 printf("Codigo: "); 
                 scanf("%d", &cod);
 
+                int pode_cadastrar_curso = 1;
                 if (buscar_no(raiz_cursos, cod, TIPO_CURSO) != NULL) {
                     printf("\n[ERRO] O curso %d ja esta cadastrado!\n", cod);
-                    break;
+                    pode_cadastrar_curso = 0;
                 }
-
-                printf("Nome do Curso: "); 
-                scanf(" %[^\n]", nome);
-                printf("Qtd. Blocos: "); 
-                scanf("%d", &blocos);
-                printf("Semanas/Semestre: "); 
-                scanf("%d", &semanas);
-                
-                if (inserirCurso(&raiz_cursos, cod, nome, blocos, semanas))
-                    printf("\n[OK] Curso registrado com sucesso!\n");
-                else
-                    printf("\n[ERRO] Falha na alocacao de memoria.\n");
+                if (pode_cadastrar_curso) {
+                    printf("Nome do Curso: "); 
+                    scanf(" %[^\n]", nome);
+                    printf("Qtd. Blocos: "); 
+                    scanf("%d", &blocos);
+                    printf("Semanas/Semestre: "); 
+                    scanf("%d", &semanas);
+                    
+                    if (inserirCurso(&raiz_cursos, cod, nome, blocos, semanas))
+                        printf("\n[OK] Curso registrado com sucesso!\n");
+                    else
+                        printf("\n[ERRO] Falha na alocacao de memoria.\n");
+                }
                 break;
 
             case 2:
@@ -186,15 +188,17 @@ int main() {
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
 
-                RBNode* curso_ref = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
+                rb_node* curso_ref = buscar_no(raiz_cursos, cod_curso, TIPO_CURSO);
+                int pode_vincular_disc = 1;
+                
                 if (curso_ref == NULL) {
                     printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
-                    break;
+                    pode_vincular_disc = 0;
                 }
 
                 printf("Codigo da Disciplina: "); 
                 scanf("%d", &cod_d);
-
+                
                     // Verifica se a disciplina já existe antes de pedir o resto dos dados
                     if (buscar_no(curso_ref->info.curso.raiz_disciplinas, cod_d, TIPO_DISCIPLINA) != NULL) {
                         printf("\n[ERRO] A disciplina %d ja existe no curso %s!\n", cod_d, curso_ref->info.curso.nome_curso);
@@ -244,34 +248,39 @@ int main() {
                 printf("Matricula: "); 
                 scanf("%d", &cod); 
 
+                int pode_cadastrar_aluno = 1;
                 if (buscar_no(raiz_alunos, cod, TIPO_ALUNO) != NULL) {
                     printf("\n[ERRO] Matricula %d ja existe!\n", cod);
-                    break;
+                    pode_cadastrar_aluno = 0;
                 }
 
-                printf("Nome do Aluno: "); 
-                scanf(" %[^\n]", nome);
-                printf("Codigo do Curso: "); 
-                scanf("%d", &cod_curso);
+                if (pode_cadastrar_aluno) {
+                    printf("Nome do Aluno: "); 
+                    scanf(" %[^\n]", nome);
+                    printf("Codigo do Curso: "); 
+                    scanf("%d", &cod_curso);
 
-                if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
-                    printf("\n[ERRO] Curso %d nao existe! Cadastre o curso primeiro.\n", cod_curso);
-                    break;
+                    if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
+                        printf("\n[ERRO] Curso %d nao existe! Cadastre o curso primeiro.\n", cod_curso);
+                        pode_cadastrar_aluno = 0;
+                    }
                 }
 
-                printf("Ano de Ingresso: "); 
-                scanf("%d", &ano);
-                printf("Semestre (1 ou 2): "); 
-                scanf("%d", &sem);
+                if (pode_cadastrar_aluno) {
+                        printf("Ano de Ingresso: "); 
+                        scanf("%d", &ano);
+                        printf("Semestre (1 ou 2): "); 
+                        scanf("%d", &sem);
 
-                if (inserirAluno(&raiz_alunos, cod, nome, cod_curso, ano, sem))
-                    printf("\n[OK] Aluno cadastrado com sucesso!\n");
-                else
-                    printf("\n[ERRO] Falha ao cadastrar aluno.\n");
+                        if (inserirAluno(&raiz_alunos, cod, nome, cod_curso, ano, sem))
+                            printf("\n[OK] Aluno cadastrado com sucesso!\n");
+                        else
+                            printf("\n[ERRO] Falha ao cadastrar aluno.\n");
+                }
                 break;
 
-            case 4: // RELATÓRIO DE CURSOS
-                printf("\n======= RELATORIO: CURSOS E DISCIPLINAS =======");
+            case 4: 
+                printf("\n=========== ARVORE DE CURSOS ============");
                 if (raiz_cursos == NULL) {
                     printf("\nNenhum curso cadastrado.\n");
                 } else {
@@ -380,18 +389,26 @@ int main() {
                 printf("\n>> LISTAR ALUNOS POR CURSO (RUBRO-NEGRA) <<\n");
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
-                printf("\nAlunos do Curso %d:\n", cod_curso);
-                listarAlunosPorCurso(raiz_alunos, cod_curso);
+                if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
+                    printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                } else {
+                    printf("\nAlunos do Curso %d:\n", cod_curso);
+                    listarAlunosPorCurso(raiz_alunos, cod_curso);
+                }
                 break;
 
             case 13: // LISTAR ALUNOS POR CURSO E ANO (Adicionado)
                 printf("\n>> LISTAR ALUNOS POR CURSO E ANO (RUBRO-NEGRA) <<\n");
                 printf("Codigo do Curso: "); 
                 scanf("%d", &cod_curso);
-                printf("Ano de Ingresso: "); 
-                scanf("%d", &ano);
-                printf("\nAlunos do Curso %d ingressos em %d:\n", cod_curso, ano);
-                listarAlunosPorCursoEAno(raiz_alunos, cod_curso, ano);
+                if (buscar_no(raiz_cursos, cod_curso, TIPO_CURSO) == NULL) {
+                    printf("\n[ERRO] Curso %d nao encontrado!\n", cod_curso);
+                } else {
+                    printf("Ano de Ingresso: "); 
+                    scanf("%d", &ano);
+                    printf("\nAlunos do Curso %d ingressos em %d:\n", cod_curso, ano);
+                    listarAlunosPorCursoEAno(raiz_alunos, cod_curso, ano);
+                }
                 break;
 
             case 14: // CONTAR ALUNOS NO CURSO (Adicionado)

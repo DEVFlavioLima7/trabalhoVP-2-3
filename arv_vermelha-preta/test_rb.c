@@ -5,16 +5,16 @@
 #include "estruturas_vp.h"
 
 // Função auxiliar para resgatar a chave de um nó
-int get_key(RBNode* node, TipoInfo tipo) {
+int get_key(rb_node* node, tipo_info tipo) {
     if (node == NULL) return -1;
-    if (tipo == TIPO_ALUNO) return node->info.aluno.matricula;
+    if (tipo == TIPO_ALUNO) return node->info.aluno.matricula_aluno;
     if (tipo == TIPO_CURSO) return node->info.curso.codigo_curso;
     if (tipo == TIPO_DISCIPLINA) return node->info.disciplina.codigo_disciplina;
     return -1;
 }
 
 // 1. Verifica Propriedade BST (Binária de Busca)
-int is_bst(RBNode* node, int min, int max, TipoInfo tipo) {
+int is_bst(rb_node* node, int min, int max, tipo_info tipo) {
     if (node == NULL) return 1;
     int key = get_key(node, tipo);
     if (key <= min || key >= max) return 0; // Violou BST
@@ -22,7 +22,7 @@ int is_bst(RBNode* node, int min, int max, TipoInfo tipo) {
 }
 
 // 2. Verifica cores consecutivas vermelhas
-int has_no_consecutive_reds(RBNode* node) {
+int has_no_consecutive_reds(rb_node* node) {
     if (node == NULL) return 1;
     if (node->cor == VERMELHO) {
         if ((node->esq && node->esq->cor == VERMELHO) || 
@@ -34,7 +34,7 @@ int has_no_consecutive_reds(RBNode* node) {
 }
 
 // 3. Verifica LLRB (Left-Leaning): Não pode haver nó vermelho na direita!
-int is_left_leaning(RBNode* node) {
+int is_left_leaning(rb_node* node) {
     if (node == NULL) return 1;
     if (node->dir && node->dir->cor == VERMELHO) {
         return 0; // Filho direito vermelho (Proibido pós-balanceamento na LLRB)
@@ -43,7 +43,7 @@ int is_left_leaning(RBNode* node) {
 }
 
 // 4. Verifica altura negra uniforme
-int get_black_height(RBNode* node) {
+int get_black_height(rb_node* node) {
     if (node == NULL) return 1; // Folhas nulas são pretas
     
     int left_bh = get_black_height(node->esq);
@@ -57,7 +57,7 @@ int get_black_height(RBNode* node) {
 }
 
 // Validação Completa
-int validar_arvore_rb(RBNode* raiz, TipoInfo tipo) {
+int validar_arvore_rb(rb_node* raiz, tipo_info tipo) {
     if (raiz == NULL) return 1;
     
     if (raiz->cor == VERMELHO) {
@@ -89,7 +89,7 @@ int validar_arvore_rb(RBNode* raiz, TipoInfo tipo) {
 }
 
 // Imprimir Arvore Desenhada Visualmente com Conexoes
-void imprimir_arvore_visual(RBNode* raiz, TipoInfo tipo, int espaco, int direcao) {
+void imprimir_arvore_visual(rb_node* raiz, tipo_info tipo, int espaco, int direcao) {
     if (raiz == NULL) return;
     
     int espaco_count = 6;
@@ -122,7 +122,7 @@ void imprimir_arvore_visual(RBNode* raiz, TipoInfo tipo, int espaco, int direcao
 
 
 // Função auxiliar para contar o tamanho real da árvore
-int contar_nos(RBNode* raiz) {
+int contar_nos(rb_node* raiz) {
     if (raiz == NULL) return 0;
     return 1 + contar_nos(raiz->esq) + contar_nos(raiz->dir);
 }
@@ -130,7 +130,7 @@ int contar_nos(RBNode* raiz) {
 
 int main() {
     srand((unsigned int)time(NULL));
-    RBNode* raiz_alunos = NULL;
+    rb_node* raiz_alunos = NULL;
     
     int qtd_insercoes = 1000;
     int chaves_inseridas[qtd_insercoes];
@@ -193,7 +193,7 @@ int main() {
     }
     
     printf("\n>> 4. Gerando teste visual para uma arvore pequena (10 elementos)...\n");
-    RBNode* arvore_pequena = NULL;
+    rb_node* arvore_pequena = NULL;
     int vetor[10] = {50, 30, 70, 20, 40, 60, 80, 10, 25, 90};
     for(int i=0; i<10; i++) {
         inserirAluno(&arvore_pequena, vetor[i], "T", 1, 2026, 1);

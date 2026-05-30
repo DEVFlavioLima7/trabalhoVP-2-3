@@ -5,12 +5,12 @@
 #include "estruturas2-3.h"
 
 // Função auxiliar para contar o tamanho real da árvore (quantidade de chaves)
-int contar_chaves_23(Arv23* raiz) {
+int contar_chaves_23(arv_2_3* raiz) {
     if (raiz == NULL) return 0;
-    int count = raiz->nInfos;
+    int count = raiz->n_infos;
     count += contar_chaves_23(raiz->esq);
     count += contar_chaves_23(raiz->cen);
-    if (raiz->nInfos == 2) {
+    if (raiz->n_infos == 2) {
         count += contar_chaves_23(raiz->dir);
     }
     return count;
@@ -18,11 +18,11 @@ int contar_chaves_23(Arv23* raiz) {
 
 // 1. Verifica propriedades estruturais e de busca (BST) de uma árvore 2-3
 // Retorna a altura da subárvore, ou -1 se for inválida
-int validar_arvore_23_recursivo(Arv23* node, int min, int max) {
+int validar_arvore_23_recursivo(arv_2_3* node, int min, int max) {
     if (node == NULL) return 0; // Altura 0
 
-    if (node->nInfos < 1 || node->nInfos > 2) {
-        printf("  [ERRO] No com numero invalido de chaves (%d)!\n", node->nInfos);
+    if (node->n_infos < 1 || node->n_infos > 2) {
+        printf("  [ERRO] No com numero invalido de chaves (%d)!\n", node->n_infos);
         return -1;
     }
 
@@ -33,7 +33,7 @@ int validar_arvore_23_recursivo(Arv23* node, int min, int max) {
     }
 
     int key2 = max;
-    if (node->nInfos == 2) {
+    if (node->n_infos == 2) {
         key2 = obterChave23(node->info[1]);
         if (key2 <= key1 || key2 >= max) {
             printf("  [ERRO] Chave 2 (%d) fora dos limites (%d, %d) ou menor/igual a chave 1 (%d)!\n", key2, key1, max, key1);
@@ -53,21 +53,21 @@ int validar_arvore_23_recursivo(Arv23* node, int min, int max) {
             printf("  [ERRO] No interno faltando filhos essenciais (esq ou cen)!\n");
             return -1;
         }
-        if (node->nInfos == 1 && node->dir != NULL) {
+        if (node->n_infos == 1 && node->dir != NULL) {
              printf("  [ERRO] No com 1 chave tem filho direito!\n");
              return -1;
         }
-        if (node->nInfos == 2 && node->dir == NULL) {
+        if (node->n_infos == 2 && node->dir == NULL) {
             printf("  [ERRO] No com 2 chaves faltando filho direito!\n");
             return -1;
         }
     }
 
     int h_esq = validar_arvore_23_recursivo(node->esq, min, key1);
-    int h_cen = validar_arvore_23_recursivo(node->cen, key1, (node->nInfos == 2) ? key2 : max);
+    int h_cen = validar_arvore_23_recursivo(node->cen, key1, (node->n_infos == 2) ? key2 : max);
     int h_dir = 0;
     
-    if (node->nInfos == 2) {
+    if (node->n_infos == 2) {
         h_dir = validar_arvore_23_recursivo(node->dir, key2, max);
     } else {
         h_dir = h_cen; // Igualamos para não falhar a checagem abaixo se nInfos == 1
@@ -83,20 +83,20 @@ int validar_arvore_23_recursivo(Arv23* node, int min, int max) {
     return h_esq + 1;
 }
 
-int validar_arvore_23(Arv23* raiz) {
+int validar_arvore_23(arv_2_3* raiz) {
     if (raiz == NULL) return 1;
     int altura = validar_arvore_23_recursivo(raiz, -2147483647, 2147483647);
     return altura != -1;
 }
 
 // Imprimir Arvore Desenhada Visualmente com Conexoes
-void imprimir_arvore_visual_23(Arv23* raiz, int espaco, int direcao) {
+void imprimir_arvore_visual_23(arv_2_3* raiz, int espaco, int direcao) {
     if (raiz == NULL) return;
     
     int espaco_count = 8;
     espaco += espaco_count;
     
-    if (raiz->nInfos == 2) {
+    if (raiz->n_infos == 2) {
         imprimir_arvore_visual_23(raiz->dir, espaco, 1);
     }
     
@@ -114,7 +114,7 @@ void imprimir_arvore_visual_23(Arv23* raiz, int espaco, int direcao) {
     
     printf("--");
     
-    if (raiz->nInfos == 1) {
+    if (raiz->n_infos == 1) {
         printf("\033[1;34m[%d]\033[0m", obterChave23(raiz->info[0])); 
     } else {
         printf("\033[1;35m[%d|%d]\033[0m", obterChave23(raiz->info[0]), obterChave23(raiz->info[1])); 
@@ -125,7 +125,7 @@ void imprimir_arvore_visual_23(Arv23* raiz, int espaco, int direcao) {
 
 int main() {
     srand((unsigned int)time(NULL));
-    Arv23* raiz_alunos = NULL;
+    arv_2_3* raiz_alunos = NULL;
     
     int qtd_insercoes = 1000;
     int chaves_inseridas[qtd_insercoes];
@@ -186,7 +186,7 @@ int main() {
     }
     
     printf("\n>> 4. Gerando teste visual para uma arvore pequena (10 elementos)...\n");
-    Arv23* arvore_pequena = NULL;
+    arv_2_3* arvore_pequena = NULL;
     int vetor[10] = {50, 30, 70, 20, 40, 60, 80, 10, 25, 90};
     for(int i=0; i<10; i++) {
         inserirAluno23(&arvore_pequena, vetor[i], "T", 1, 2026, 1);
