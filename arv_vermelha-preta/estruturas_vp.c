@@ -184,6 +184,57 @@ int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, 
     return res;
 }
 
+rb_node *removerMenor(rb_node *raiz) {
+    rb_node *resultado = NULL;
+
+    if (raiz->esq == NULL) {
+        free(raiz);
+        resultado = NULL;
+    } else {
+        if (obter_cor(raiz->esq) == PRETO && obter_cor(raiz->esq->esq) == PRETO) {
+            raiz = moverRedEsq(raiz);
+        }
+        raiz->esq = removerMenor(raiz->esq);
+        resultado = balancear(raiz);
+    }
+    
+    return resultado;
+}
+
+rb_node *procurarMenor(rb_node *atual) {
+    rb_node *resultado = NULL;
+    
+    if (atual != NULL) {
+        while (atual->esq != NULL) {
+            atual = atual->esq;
+        }
+        resultado = atual;
+    }
+    
+    return resultado;
+}
+
+rb_node *moverRedEsq(rb_node *raiz) {
+    trocar_cores(raiz);
+    if (obter_cor(raiz->dir->esq) == VERMELHO) {
+        raiz->dir = rotar_direita(raiz->dir);
+        raiz = rotar_esquerda(raiz);
+        trocar_cores(raiz);
+    }
+    return raiz;
+}
+
+rb_node *moverRedDir(rb_node *raiz) {
+    trocar_cores(raiz);
+    if (obter_cor(raiz->esq->esq) == VERMELHO) {
+        raiz = rotar_direita(raiz);
+        trocar_cores(raiz);
+    }
+    return raiz;
+}
+
+
+
 /* --- FUNÇÕES ESPECÍFICAS DE IMPRESSÃO --- */
 
 // 1. Especializada em Disciplinas (imprime sem mergulhar mais, pois é o nível folha)
@@ -624,11 +675,11 @@ rb_node* remover_no_curso(rb_node* raiz, int cod_curso) {
     return resultado;
 }
 
-
+// Retorna 1 (Sucesso), -1 (Não encontrado) ou -2 (Possui disciplinas)
 int excluirCurso(rb_node** raiz_cursos, int cod_curso) {
-    int res = 1; 
+    int res = 1; // 1 = Sucesso por padrão
     
-   
+    // Busca o curso sem descer o ponteiro duplo ainda
     rb_node* no_curso = buscar_no(*raiz_cursos, cod_curso, TIPO_CURSO);
 
     if (no_curso == NULL) {
