@@ -148,6 +148,7 @@ int main() {
         printf("  [14] Contar Alunos em um Curso\n");        // Adicionado
         printf("  [15] Excluir Disciplina de um Curso\n");
         printf("  [16] Excluir Curso\n");
+        printf("  [17] Experimento\n");
         printf("  [0] Sair do Sistema\n");
         printf("-----------------------------------------------------------\n");
         printf("  Selecione uma opcao: ");
@@ -196,8 +197,9 @@ int main() {
                     pode_vincular_disc = 0;
                 }
 
-                printf("Codigo da Disciplina: "); 
-                scanf("%d", &cod_d);
+                if (pode_vincular_disc) {
+                    printf("Codigo da Disciplina: "); 
+                    scanf("%d", &cod_d);
                 
                     // Verifica se a disciplina já existe antes de pedir o resto dos dados
                     if (buscar_no(curso_ref->info.curso.raiz_disciplinas, cod_d, TIPO_DISCIPLINA) != NULL) {
