@@ -122,6 +122,7 @@ int rebalancearEsq(arv_2_3 *pai);
 int rebalancearCen(arv_2_3 *pai);
 int rebalancearDir(arv_2_3 *pai);
 int remover23Recursivo(arv_2_3 **raiz, int chave);
+void destruirArvore23(arv_2_3 *raiz);
 
 
 

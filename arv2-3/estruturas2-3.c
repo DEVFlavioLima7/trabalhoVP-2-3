@@ -1177,3 +1177,12 @@ int removerNo23(arv_2_3 **raiz, int chave) {
 
     return sucesso;
 }
+
+void destruirArvore23(arv_2_3 *raiz) {
+    if (raiz != NULL) {
+        destruirArvore23(raiz->esq);
+        destruirArvore23(raiz->cen);
+        destruirArvore23(raiz->dir);
+        free(raiz);
+    }
+}

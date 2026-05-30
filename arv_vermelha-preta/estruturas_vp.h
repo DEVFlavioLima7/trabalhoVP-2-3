@@ -65,6 +65,7 @@ typedef struct rbnode {
 
 /* ===================== PROTÓTIPOS ===================== */
 int inserirAluno(rb_node** raiz_alunos, int mat, char nome[], int cod_curso, int ano, int sem);
+int removerAluno(rb_node** raiz_alunos, int mat);
 int inserirCurso(rb_node** raiz_cursos, int codigo, char nome[], int blocos, int semanas);
 int inserirDisciplinaNoCurso(rb_node* raiz_cursos, int cod_curso, int cod_disc, char nome[], int bloco, int carga);
 
@@ -94,6 +95,7 @@ void listarAlunosPorCurso(rb_node* raiz, int cod_curso);
 void listarAlunosPorCursoEAno(rb_node* raiz, int cod_curso, int ano);
 int contarAlunosNoCurso(rb_node* raiz, int cod_curso);
 rb_node* remover_no_disciplina(rb_node* raiz, int cod_disc);
+rb_node* remover_no_aluno(rb_node* raiz, int mat);
 rb_node *moverRedEsq(rb_node *raiz);
 rb_node *moverRedDir(rb_node *raiz);
 rb_node* procurarMenor(rb_node* raiz);

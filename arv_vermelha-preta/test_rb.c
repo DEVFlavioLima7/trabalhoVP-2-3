@@ -1,208 +1,99 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
-#include <limits.h>
 #include "estruturas_vp.h"
 
-// Função auxiliar para resgatar a chave de um nó
-int get_key(rb_node* node, tipo_info tipo) {
-    if (node == NULL) return -1;
-    if (tipo == TIPO_ALUNO) return node->info.aluno.matricula_aluno;
-    if (tipo == TIPO_CURSO) return node->info.curso.codigo_curso;
-    if (tipo == TIPO_DISCIPLINA) return node->info.disciplina.codigo_disciplina;
-    return -1;
-}
-
-// 1. Verifica Propriedade BST (Binária de Busca)
-int is_bst(rb_node* node, int min, int max, tipo_info tipo) {
-    if (node == NULL) return 1;
-    int key = get_key(node, tipo);
-    if (key <= min || key >= max) return 0; // Violou BST
-    return is_bst(node->esq, min, key, tipo) && is_bst(node->dir, key, max, tipo);
-}
-
-// 2. Verifica cores consecutivas vermelhas
-int has_no_consecutive_reds(rb_node* node) {
-    if (node == NULL) return 1;
-    if (node->cor == VERMELHO) {
-        if ((node->esq && node->esq->cor == VERMELHO) || 
-            (node->dir && node->dir->cor == VERMELHO)) {
-            return 0; // Dois vermelhos seguidos
-        }
-    }
-    return has_no_consecutive_reds(node->esq) && has_no_consecutive_reds(node->dir);
-}
-
-// 3. Verifica LLRB (Left-Leaning): Não pode haver nó vermelho na direita!
-int is_left_leaning(rb_node* node) {
-    if (node == NULL) return 1;
-    if (node->dir && node->dir->cor == VERMELHO) {
-        return 0; // Filho direito vermelho (Proibido pós-balanceamento na LLRB)
-    }
-    return is_left_leaning(node->esq) && is_left_leaning(node->dir);
-}
-
-// 4. Verifica altura negra uniforme
-int get_black_height(rb_node* node) {
-    if (node == NULL) return 1; // Folhas nulas são pretas
-    
-    int left_bh = get_black_height(node->esq);
-    int right_bh = get_black_height(node->dir);
-    
-    if (left_bh == -1 || right_bh == -1 || left_bh != right_bh) {
-        return -1; // Altura diferente!
+// ============================================================================
+// BUSCA COM RASTREAMENTO DE CAMINHO (Sem alterar o TAD original)
+// ============================================================================
+// Esta função faz a busca binária normal, mas possui os printfs exigidos 
+// pela professora para rastrear o caminho e a cor dos nós visualmente.
+rb_node* buscar_com_caminho_vp(rb_node* raiz, int chave) {
+    if (raiz == NULL) {
+        printf(" -> [NAO ENCONTRADO]\n");
+        return NULL;
     }
     
-    return left_bh + (node->cor == PRETO ? 1 : 0);
-}
-
-// Validação Completa
-int validar_arvore_rb(rb_node* raiz, tipo_info tipo) {
-    if (raiz == NULL) return 1;
-    
-    if (raiz->cor == VERMELHO) {
-        printf("  [ERRO] Raiz nao e preta!\n");
-        return 0;
-    }
-    
-    if (!is_bst(raiz, -2147483647, 2147483647, tipo)) {
-        printf("  [ERRO] A arvore perdeu a propriedade BST (desordenada)!\n");
-        return 0;
-    }
-    
-    if (!has_no_consecutive_reds(raiz)) {
-        printf("  [ERRO] Nos vermelhos consecutivos encontrados!\n");
-        return 0;
-    }
-    
-    if (!is_left_leaning(raiz)) {
-        printf("  [ERRO] No filho a direita vermelho detectado (LLRB violada)!\n");
-        return 0;
-    }
-    
-    if (get_black_height(raiz) == -1) {
-        printf("  [ERRO] Caminhos com diferentes quantidades de nos pretos (Altura Negra invalida)!\n");
-        return 0;
-    }
-    
-    return 1;
-}
-
-// Imprimir Arvore Desenhada Visualmente com Conexoes
-void imprimir_arvore_visual(rb_node* raiz, tipo_info tipo, int espaco, int direcao) {
-    if (raiz == NULL) return;
-    
-    int espaco_count = 6;
-    espaco += espaco_count;
-    
-    // Imprime sub-arvore da direita
-    imprimir_arvore_visual(raiz->dir, tipo, espaco, 1);
-    
-    printf("\n");
-    for (int i = espaco_count; i < espaco; i++) {
-        printf(" ");
-    }
-    
-    int key = get_key(raiz, tipo);
+    int chave_atual = raiz->info.curso.codigo_curso;
     char cor = (raiz->cor == PRETO) ? 'P' : 'V';
-    
-    if (direcao == 1) printf("/"); // Filho da direita
-    else if (direcao == -1) printf("\\"); // Filho da esquerda
-    else printf("-"); // Raiz
-    
-    printf("--");
-    
-    if (cor == 'P') printf("\033[1;30m%d(%c)\033[0m", key, cor); 
-    else printf("\033[1;31m%d(%c)\033[0m", key, cor); 
-    
-    // Imprime sub-arvore da esquerda
-    imprimir_arvore_visual(raiz->esq, tipo, espaco, -1);
+
+    // Imprime o nó atual visitado e a sua cor
+    printf("[%d(%c)]", chave_atual, cor);
+
+    // Verificação de sucesso
+    if (chave == chave_atual) {
+        printf(" -> [ALVO ENCONTRADO!]\n");
+        return raiz;
+    }
+
+    // Decisão de descida
+    if (chave < chave_atual) {
+        printf(" -> ESQ -> ");
+        return buscar_com_caminho_vp(raiz->esq, chave);
+    } else {
+        printf(" -> DIR -> ");
+        return buscar_com_caminho_vp(raiz->dir, chave);
+    }
 }
 
-
-
-// Função auxiliar para contar o tamanho real da árvore
-int contar_nos(rb_node* raiz) {
-    if (raiz == NULL) return 0;
-    return 1 + contar_nos(raiz->esq) + contar_nos(raiz->dir);
-}
-
-
+// ============================================================================
+// EXPERIMENTO PRINCIPAL
+// ============================================================================
 int main() {
     srand((unsigned int)time(NULL));
-    rb_node* raiz_alunos = NULL;
+    rb_node* raiz_cursos = NULL;
     
-    int qtd_insercoes = 1000;
-    int chaves_inseridas[qtd_insercoes];
+    int qtd_total = 1000;
+    int array_cursos[1000];
     int count = 0;
     
     printf("\n=======================================================\n");
-    printf("   INICIANDO TESTES AUTOMATIZADOS - ARVORE RUBRO NEGRA \n");
+    printf("   EXPERIMENTO DE BUSCA - ARVORE RUBRO-NEGRA (CURSOS) \n");
     printf("=======================================================\n\n");
     
-    printf(">> 1. Inserindo %d alunos aleatorios...\n", qtd_insercoes);
-    for (int i = 0; i < qtd_insercoes; i++) {
-        int mat = (rand() % 90000) + 10000; // Matriculas entre 10000 e 99999
-        int res = inserirAluno(&raiz_alunos, mat, "Aluno Teste", 1, 2026, 1);
+    // 1. Populando a árvore com 1000 cursos para o teste ter relevância
+    printf(">> Populando a arvore com %d cursos...\n", qtd_total);
+    while (count < qtd_total) {
+        int cod = (rand() % 90000) + 1000; 
         
-        if (res == 1) { // Só guarda se foi inserido com sucesso (não era duplicata)
-            chaves_inseridas[count++] = mat;
-        }
-    }
-    printf("   [OK] Foram inseridas %d chaves UNICAS na arvore.\n", count);
-    
-    int total_nos = contar_nos(raiz_alunos);
-    if (total_nos != count) {
-        printf("   [ERRO FATAL] Quantidade de nos reais (%d) diverge dos inseridos (%d)!\n", total_nos, count);
-        return 1;
-    } else {
-        printf("   [OK] Contagem de nos da arvore (%d) confere.\n", total_nos);
-    }
-
-    printf("\n>> 2. Validando integridade estrutural da Arvore (Regras LLRB)...\n");
-    if (validar_arvore_rb(raiz_alunos, TIPO_ALUNO)) {
-        printf("   [OK] A arvore passou em TODAS as propriedades Rubro-Negras!\n");
-        printf("        - Raiz e Preta\n");
-        printf("        - Ordem da Busca Binaria\n");
-        printf("        - Sem dois vermelhos seguidos\n");
-        printf("        - Todos os caminhos tem a mesma altura preta\n");
-        printf("        - Todos os nos vermelhos pendem para a esquerda (LLRB)\n");
-    } else {
-        printf("   [ERRO FATAL] A arvore quebrou as regras Rubro-Negras!\n");
-        return 1;
-    }
-    
-    printf("\n>> 3. Validando BLINDAGEM contra chaves duplicadas...\n");
-    int sucesso_blindagem = 1;
-    for (int i = 0; i < 50; i++) { // Tentando inserir as primeiras 50 que já sabemos que estão na árvore
-        int res = inserirAluno(&raiz_alunos, chaves_inseridas[i], "Aluno Clone", 1, 2026, 1);
-        if (res != 0) { // Deveria retornar 0 (falha por já existir)
-            sucesso_blindagem = 0;
-            printf("   [ERRO FATAL] Permitiu inserir a matricula duplicada %d!\n", chaves_inseridas[i]);
-            break;
+        // Usa a sua função de inserção padrão do TAD
+        if (inserirCurso(&raiz_cursos, cod, "Curso Exp", 8, 15) == 1) {
+            array_cursos[count] = cod;
+            count++;
         }
     }
     
-    if (sucesso_blindagem) {
-        printf("   [OK] Sistema rejeitou todas as insercoes duplicadas perfeitamente.\n");
+    // 2. Sorteando 30 itens aleatórios que sabemos que existem na árvore
+    int alvos_busca[30];
+    for (int i = 0; i < 30; i++) {
+        int indice_sorteado = rand() % count;
+        alvos_busca[i] = array_cursos[indice_sorteado];
     }
     
-    if (contar_nos(raiz_alunos) != count) {
-        printf("   [ERRO FATAL] O tamanho da arvore foi alterado pelas duplicatas escondidas!\n");
-        return 1;
+    printf(">> Iniciando a busca pelos 30 itens selecionados...\n\n");
+    
+    // 3. Executando o experimento e cronometrando
+    clock_t tempo_inicio = clock();
+    
+    for (int i = 0; i < 30; i++) {
+        printf("Busca %02d (Alvo: %d): Caminho: ", i + 1, alvos_busca[i]);
+        buscar_com_caminho_vp(raiz_cursos, alvos_busca[i]);
     }
     
-    printf("\n>> 4. Gerando teste visual para uma arvore pequena (10 elementos)...\n");
-    rb_node* arvore_pequena = NULL;
-    int vetor[10] = {50, 30, 70, 20, 40, 60, 80, 10, 25, 90};
-    for(int i=0; i<10; i++) {
-        inserirAluno(&arvore_pequena, vetor[i], "T", 1, 2026, 1);
-    }
-    printf("   --- Arvore LLRB Gerada (P=Preto, V=Vermelho) ---\n\n");
-    imprimir_arvore_visual(arvore_pequena, TIPO_ALUNO, 0, 0);
-    printf("\n   ------------------------------------------------\n");
+    clock_t tempo_fim = clock();
     
-    printf("\n>> SUCESSO ABSOLUTO! O TAD da Arvore Vermelho-Preta esta impecavel.\n\n");
+    // 4. Exibindo os resultados de tempo
+    double tempo_gasto_ms = ((double)(tempo_fim - tempo_inicio) / CLOCKS_PER_SEC) * 1000.0;
+    
+    printf("\n=======================================================\n");
+    printf("                  RESULTADOS OBTIDOS                   \n");
+    printf("=======================================================\n");
+    printf("Total de buscas realizadas : 30 cursos\n");
+    printf("Tamanho da Arvore VP       : %d cursos cadastrados\n", count);
+    printf("Tempo total gasto          : %f milissegundos\n", tempo_gasto_ms);
+    printf("Tempo medio por busca      : %f milissegundos\n", tempo_gasto_ms / 30.0);
+    printf("=======================================================\n\n");
     
     return 0;
 }
